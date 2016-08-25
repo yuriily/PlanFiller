@@ -1,0 +1,112 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.BorderPane?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.TextArea?>
+<BorderPane fx:controller="PlanFillerController" xmlns:fx="http://javafx.com/fxml">
+    <center>
+        <HBox maxWidth="Infinity" prefWidth="Infinity"
+              style=" -fx-border-color:navy; -fx-border-width: 2; -fx-border-style: solid;">
+            <children>
+                <VBox style=" -fx-border-color:black; -fx-border-width: 2; -fx-border-style: solid;"
+                      maxWidth="Infinity">
+                    <children>
+                        <Label text="Projects" maxWidth="Infinity"/>
+                        <ListView fx:id="testProjectList" prefHeight="1000.0" maxWidth="Infinity"/>
+                    </children>
+                </VBox>
+
+                <VBox style=" -fx-border-color:black; -fx-border-width: 2; -fx-border-style: solid;"
+                      maxWidth="Infinity">
+                    <children>
+                        <Label text="Test plans" maxWidth="Infinity"/>
+                        <ListView fx:id="testPlanList" prefHeight="1000.0" maxWidth="Infinity"/>
+                        <Button fx:id="testPlanAddButton" text="Add plan" maxWidth="Infinity"/>
+                    </children>
+                </VBox>
+                <HBox style=" -fx-border-color:black; -fx-border-width: 2; -fx-border-style: solid;">
+                    <children>
+                        <VBox maxWidth="Infinity">
+                            <children>
+                                <Label text="Test suite"/>
+                                <ListView fx:id="testSuiteList" maxWidth="Infinity" prefHeight="1000.0">
+                                </ListView>
+                                <Button fx:id="testSuiteAddButton" maxWidth="Infinity" text="Add suite"/>
+                            </children>
+                        </VBox>
+                        <VBox maxWidth="Infinity">
+                            <children>
+                                <Label text="Test cases in suite"/>
+                                <ListView fx:id="testCaseList" prefHeight="1000.0" maxWidth="Infinity"/>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+
+                <HBox style=" -fx-border-color:black; -fx-border-width: 2; -fx-border-style: solid;">
+                    <children>
+                        <VBox maxWidth="Infinity">
+                            <children>
+                                <Label text="Configuration"/>
+                                <ListView fx:id="configurationList" maxWidth="Infinity" prefHeight="1000.0">
+                                </ListView>
+                                <Button fx:id="configurationAddButton" maxWidth="Infinity" text="Add configuration"/>
+                                <Button fx:id="configurationNewFromFileButton" maxWidth="Infinity"
+                                        text="New from file..."/>
+                            </children>
+                        </VBox>
+                        <VBox maxWidth="Infinity">
+                            <children>
+                                <Label text="Items in configuration"/>
+                                <ListView fx:id="configurationItemsList" prefHeight="1000.0" maxWidth="Infinity"/>
+                                <Button fx:id="itemAddButton" maxWidth="Infinity" text="Add item"/>
+                                <Button fx:id="itemRemoveButton" maxWidth="Infinity" text="Remove item"/>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+            </children>
+
+        </HBox>
+    </center>
+
+    <right>
+        <VBox maxWidth="200">
+            <children>
+                <Button fx:id="importPlanButton" text="Import plan" maxWidth="Infinity"/>
+                <Button fx:id="exportPlanButton" text="Export plan" maxWidth="Infinity"/>
+                <Button fx:id="previewPlanButton" text="Preview plan" maxWidth="Infinity"/>
+                <Separator orientation="HORIZONTAL"/>
+                <Button fx:id="fillPlanButton" text="Fill plan" maxWidth="Infinity"/>
+                <Separator orientation="HORIZONTAL"/>
+                <VBox maxHeight="Infinity">
+                    <children>
+                        <TableView fx:id="tableView" prefHeight="1000.0"/>
+                        <CheckBox fx:id="transposeCheckbox" selected="false" text="transpose"/>
+                    </children>
+                </VBox>
+                <Separator orientation="HORIZONTAL"/>
+                <Button fx:id="optionsButton" text="Options..." maxWidth="Infinity"/>
+                <Button fx:id="exitButton" text="Exit" maxWidth="Infinity"/>
+            </children>
+        </VBox>
+    </right>
+
+    <bottom>
+        <VBox>
+            <style>
+                -fx-margin: 20;
+            </style>
+            <children>
+                <TextArea fx:id="consoleArea" maxHeight="300.0" maxWidth="Infinity"/>
+            </children>
+        </VBox>
+    </bottom>
+</BorderPane>

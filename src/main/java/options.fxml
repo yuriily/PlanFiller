@@ -1,0 +1,39 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.BorderPane?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.TextField?>
+<AnchorPane fx:controller="OptionsController" xmlns:fx="http://javafx.com/fxml">
+    <children>
+        <VBox maxWidth="Infinity">
+            <children>
+                <HBox>
+                    <children>
+                        <Label text="URL to testrail instance" minWidth="200.0"/>
+                        <TextField fx:id="urlTextField" minWidth="300.0" promptText="URL like http://...com/testrail/"/>
+                    </children>
+                </HBox>
+                <HBox>
+                    <children>
+                        <Label text="Login" minWidth="200.0"/>
+                        <TextField fx:id="loginTextField" minWidth="300.0"/>
+                    </children>
+                </HBox>
+                <HBox>
+                    <children>
+                        <Label text="Password" minWidth="200.0"/>
+                        <TextField fx:id="passwordTextField" minWidth="300.0" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+        <Button fx:id="saveOptionsButton" text="_Save and apply"/>
+        <Button fx:id="closeOptionsButton" text="_Close and discard" />
+    </children>
+
+
+</AnchorPane>
