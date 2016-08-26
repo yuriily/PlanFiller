@@ -16,6 +16,7 @@ import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class PlanFillerController {
     private Stage primaryStage;
@@ -24,7 +25,7 @@ public class PlanFillerController {
     @FXML
     public ListView<Project> testProjectList;
     @FXML
-    public ListView testPlanList;
+    public ListView<Plan> testPlanList;
     @FXML
     public Button testPlanAddButton;
     @FXML
@@ -77,8 +78,14 @@ public class PlanFillerController {
             @Override
             public void changed(ObservableValue<? extends Project> observable, Project oldValue, Project newValue) {
                 testSuiteList.getItems().clear();
+                testPlanList.getItems().clear();
+                configurationList.getItems().clear();
+                configurationItemsList.getItems().clear();
                 try {
+                    ObservableList<Plan> plans = FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(newValue.getId(), Plan.class));
                     ObservableList<Suite> suites = FXCollections.observableArrayList(RailClient.getInstance().getSuites(newValue.getId()));
+
+                    testPlanList.setItems(plans);
                     testSuiteList.setItems(suites);
                 } catch (Exception e) {
                     e.printStackTrace();

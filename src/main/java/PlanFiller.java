@@ -60,7 +60,6 @@ public class PlanFiller extends Application {
             //try to connect with existing credentials; skip if config is empty
             if(RailClient.getInstance().connect()) {
                 //todo load data into model
-                System.out.println(RailClient.getInstance().getProjects());
                 planFillerController.testProjectList.setItems((ObservableList<Project>)
                         FXCollections.observableArrayList(RailClient.getInstance().getProjects()));
 

@@ -1,10 +1,10 @@
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import data.Project;
-import data.Suite;
+import data.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +41,7 @@ public final class RailClient {
         return true;
     }
 
+    //todo change to generic getAllInstances
     public List<Project> getProjects() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
@@ -52,6 +53,7 @@ public final class RailClient {
         return projectList;
     }
 
+    //todo change to generic getAllInstances
     public List<Suite> getSuites(int projectId) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
@@ -63,6 +65,24 @@ public final class RailClient {
         //todo check if there are no suites - will the listview be refreshed correctly?
 
         return suiteList;
+
+    }
+
+    public <T> List<T> getAllInstances(int parameterId, Class<T> instanceClass) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String prefix="";
+        T inst = instanceClass.newInstance();
+
+        JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, inst.getClass());
+        System.out.println(type.toString());
+
+        if(inst instanceof Plan)
+            prefix="get_plans/"+parameterId;
+
+        ArrayList<T> results = mapper.readValue(client.sendGet(prefix).toString(), type);
+        return results;
 
     }
 
