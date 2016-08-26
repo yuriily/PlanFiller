@@ -1,3 +1,8 @@
+import data.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -17,13 +22,13 @@ public class PlanFillerController {
     private Parent options;
 
     @FXML
-    public ListView testProjectList;
+    public ListView<Project> testProjectList;
     @FXML
     public ListView testPlanList;
     @FXML
     public Button testPlanAddButton;
     @FXML
-    public ListView testSuiteList;
+    public ListView<Suite> testSuiteList;
     @FXML
     public Button testSuiteAddButton;
     @FXML
@@ -68,6 +73,19 @@ public class PlanFillerController {
 
     @FXML
     public void initialize() {
+        testProjectList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Project>() {
+            @Override
+            public void changed(ObservableValue<? extends Project> observable, Project oldValue, Project newValue) {
+                testSuiteList.getItems().clear();
+                try {
+                    ObservableList<Suite> suites = FXCollections.observableArrayList(RailClient.getInstance().getSuites(newValue.getId()));
+                    testSuiteList.setItems(suites);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         optionsButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 openOptionsPanel(event);
@@ -88,7 +106,6 @@ public class PlanFillerController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
 

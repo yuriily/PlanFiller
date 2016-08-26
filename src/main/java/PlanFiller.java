@@ -3,6 +3,8 @@
  */
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,6 +20,8 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
+
+import data.*;
 
 public class PlanFiller extends Application {
     private Stage currentStage;
@@ -53,10 +57,13 @@ public class PlanFiller extends Application {
         //try to load config
         if(loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH)) {
 
-            //todo try to connect with existing credentials; skip if config is empty
+            //try to connect with existing credentials; skip if config is empty
             if(RailClient.getInstance().connect()) {
                 //todo load data into model
                 System.out.println(RailClient.getInstance().getProjects());
+                planFillerController.testProjectList.setItems((ObservableList<Project>)
+                        FXCollections.observableArrayList(RailClient.getInstance().getProjects()));
+
 
             } else {
                 //todo if it's not, try to open last known project and suite and configuration
