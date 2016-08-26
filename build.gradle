@@ -1,14 +1,32 @@
 group 'com.yuriily'
 version '1.0-SNAPSHOT'
 
+apply plugin: 'idea'
 apply plugin: 'java'
 
 sourceCompatibility = 1.5
 
 repositories {
-    mavenCentral()
+//    mavenCentral()
+    jcenter()
+    maven { url 'https://mvnrepository.com/' }
+
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
+
+    // https://mvnrepository.com/artifact/org.jasypt/jasypt
+    compile group: 'org.jasypt', name: 'jasypt', version: '1.9.2'
+
+    // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
+
+    // https://mvnrepository.com/artifact/com.codepine.api/testrail-api-java-client
+    compile group: 'com.codepine.api', name: 'testrail-api-java-client', version: '1.0.1'
+    compile 'com.codepine.api:testrail-api-java-client:1.0.0'
+
+    //SuperCSV
+    compile group: 'net.sf.supercsv', name: 'super-csv', version: '2.4.0'
+
 }

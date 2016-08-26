@@ -1,12 +1,21 @@
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class PlanFillerController {
     private Stage primaryStage;
+    private Parent options;
+
     @FXML
     public ListView testProjectList;
     @FXML
@@ -56,4 +65,31 @@ public class PlanFillerController {
     public void setPrimaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
     }
+
+    @FXML
+    public void initialize() {
+        optionsButton.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                openOptionsPanel(event);
+            }
+        });
+    }
+
+    public void openOptionsPanel(ActionEvent event) {
+        Stage stage = new Stage();
+        stage.setTitle("Options");
+        FXMLLoader optionsLoader = new FXMLLoader(getClass().getResource("options.fxml"));
+        try {
+            Parent options = optionsLoader.load();
+            Scene scene = new Scene(options);
+            stage.setScene(scene);
+//            primaryStage.hide();
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
 }
