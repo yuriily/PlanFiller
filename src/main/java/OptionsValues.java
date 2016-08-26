@@ -1,5 +1,3 @@
-import java.net.URL;
-
 /**
  * Created by yuriily on 26-Aug-16.
  */

@@ -54,8 +54,9 @@ public class PlanFiller extends Application {
         if(loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH)) {
 
             //todo try to connect with existing credentials; skip if config is empty
-            if(connectToRails()) {
+            if(RailClient.getInstance().connect()) {
                 //todo load data into model
+                System.out.println(RailClient.getInstance().getProjects());
 
             } else {
                 //todo if it's not, try to open last known project and suite and configuration
@@ -66,7 +67,6 @@ public class PlanFiller extends Application {
         primaryStage.show();
 
     }
-
 
     private static void trustEveryone() {
         try {
@@ -96,6 +96,7 @@ public class PlanFiller extends Application {
     private boolean loadOptions(String path) {
         StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
         encryptor.setPassword("somehardcodedpassword");
+        encryptor.setAlgorithm("PBEWithMD5AndDES");
         Properties props = new EncryptableProperties(encryptor);
         FileInputStream file;
 
@@ -116,9 +117,12 @@ public class PlanFiller extends Application {
             OptionsValues.getInstance().setRailsURL(props.getProperty("railsURL"));
             OptionsValues.getInstance().setUsername(props.getProperty("username"));
             OptionsValues.getInstance().setPassword(props.getProperty("password"));
-            OptionsValues.getInstance().setLastProject(Integer.parseInt(props.getProperty("lastProject")));
-            OptionsValues.getInstance().setLastSuite(Integer.parseInt(props.getProperty("password")));
-            OptionsValues.getInstance().setLastConfiguration(Integer.parseInt(props.getProperty("password")));
+            if (null != props.getProperty("lastProject"))
+                OptionsValues.getInstance().setLastProject(Integer.parseInt(props.getProperty("lastProject")));
+            if (null != props.getProperty("lastSuite"))
+                OptionsValues.getInstance().setLastSuite(Integer.parseInt(props.getProperty("lastSuite")));
+            if (null != props.getProperty("lastConfiguration"))
+            OptionsValues.getInstance().setLastConfiguration(Integer.parseInt(props.getProperty("lastConfiguration")));
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -127,7 +131,4 @@ public class PlanFiller extends Application {
 
     }
 
-    private boolean connectToRails() {
-        return true;
-    }
 }

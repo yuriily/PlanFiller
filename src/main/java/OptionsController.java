@@ -66,6 +66,7 @@ public class OptionsController {
 
         StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
         encryptor.setPassword("somehardcodedpassword");
+        encryptor.setAlgorithm("PBEWithMD5AndDES");
 
         //write the properties - ignore current plan, suite and config
         Properties props = new Properties();
