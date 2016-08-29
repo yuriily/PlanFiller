@@ -1,22 +1,25 @@
 package data;
 
-public class Configuration {
-	private ConfigurationItem configs[];
+public class Configuration extends TestRailsEntity {
+	private ConfigurationItem[] configs;
 	private int id;
 	private String name;
-	private int project_id;
-	public Configuration(ConfigurationItem[] configurationItems, int id, String name, int projectId) {
+	private int projectId;
+
+	public Configuration() {}
+
+	public Configuration(ConfigurationItem[] configs, int id, String name, int projectId) {
 		super();
-		this.configs = configurationItems;
+		this.configs = configs;
 		this.id = id;
 		this.name = name;
-		this.project_id = projectId;
+		this.projectId = projectId;
 	}
-	public ConfigurationItem[] getConfigurationItems() {
+	public ConfigurationItem[] getConfigs() {
 		return configs;
 	}
-	public void setConfigurationItems(ConfigurationItem[] configurationItems) {
-		this.configs = configurationItems;
+	public void setConfigs(ConfigurationItem[] configs) {
+		this.configs = configs;
 	}
 	public int getId() {
 		return id;
@@ -31,10 +34,10 @@ public class Configuration {
 		this.name = name;
 	}
 	public int getProjectId() {
-		return project_id;
+		return projectId;
 	}
 	public void setProjectId(int projectId) {
-		this.project_id = projectId;
+		this.projectId = projectId;
 	}
 	
 	

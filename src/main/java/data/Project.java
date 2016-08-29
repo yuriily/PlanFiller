@@ -2,11 +2,9 @@ package data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Project {
+public class Project extends TestRailsEntity {
 	private int suiteMode;
 	private Long completedOn;
-	private String name;
-	private int id;
 	private boolean showAnnouncement;
     @JsonProperty("is_completed")
     private boolean isCompleted;
@@ -14,7 +12,7 @@ public class Project {
 	private String announcement;
 
 	//just to enable jackson serialization
-	private Project() {}
+	public Project() {}
 	
 	public Project(int suiteMode, Long completedOn, String name, int id, boolean showAnnouncement, boolean isCompleted,
 			String url, String announcement) {
@@ -24,21 +22,12 @@ public class Project {
 		
 		this.suiteMode = suiteMode;
 		this.completedOn = completedOn;
-		this.name = name;
-		this.id = id;
+		super.setName(name);
+		super.setId(id);
 		this.showAnnouncement = showAnnouncement;
 		this.isCompleted = isCompleted;
 		this.url = url;
 		this.announcement = announcement;
-	}
-
-	@Override
-	public String toString() {
-		String result = ((Integer)this.id).toString();
-		while(result.length()<6)
-			result=" " + result;
-		result+="| " + this.name;
-		return result;
 	}
 
 	public int getSuiteMode() {
@@ -58,19 +47,19 @@ public class Project {
 	}
 
 	public String getName() {
-		return name;
+		return super.getName();
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		super.setName(name);
 	}
 
 	public int getId() {
-		return id;
+		return super.getId();
 	}
 
 	public void setId(int id) {
-		this.id = id;
+		super.setId(id);
 	}
 
 	public boolean isShowAnnouncement() {

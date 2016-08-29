@@ -1,52 +1,72 @@
 package data;
 
-public class Case {
-	private int created_by;
-	private Long created_on;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Case extends TestRailsEntity {
+	private int createdBy;
+	private Long createdOn;
 	private String estimate;
-	private String estimate_forecast;
+	private String estimateForecast;
 	private int id;
-	private int milestone_id;
-	private int priority_id;
+	private int milestoneId;
+	private int priorityId;
 	private String refs;
-	private int section_id;
-	private int suite_id;
-	private int template_id;
+	private int sectionId;
+	private int suiteId;
+	private int templateId;
 	private String title;
-	private String type_id;
-	private int updated_by;
-	private Long updated_on;
+	private String typeId;
+	private int updatedBy;
+	private Long updatedOn;
+
+	public Case() {
+
+	}
+
 	public Case(int createdBy, Long createdOn, String estimate, String estimateForecast, int id, int milestoneId,
 			int priorityId, String refs, int sectionId, int suiteId, int templateId, String title, String typeId,
 			int updatedBy, Long updatedOn) {
 		super();
-		this.created_by = createdBy;
-		this.created_on = createdOn;
+		this.createdBy = createdBy;
+		this.createdOn = createdOn;
 		this.estimate = estimate;
-		this.estimate_forecast = estimateForecast;
+		this.estimateForecast = estimateForecast;
 		this.id = id;
-		this.milestone_id = milestoneId;
-		this.priority_id = priorityId;
+		this.milestoneId = milestoneId;
+		this.priorityId = priorityId;
 		this.refs = refs;
-		this.section_id = sectionId;
-		this.suite_id = suiteId;
-		this.template_id = templateId;
+		this.sectionId = sectionId;
+		this.suiteId = suiteId;
+		this.templateId = templateId;
 		this.title = title;
-		this.type_id = typeId;
-		this.updated_by = updatedBy;
-		this.updated_on = updatedOn;
+		this.typeId = typeId;
+		this.updatedBy = updatedBy;
+		this.updatedOn = updatedOn;
 	}
+
+	@Override
+	public String toString() {
+		if(null== this.getTitle())
+			this.setName("(empty)");
+		String result = ((Integer) this.getId()).toString();
+		while(result.length()<6)
+			result=" " + result;
+		result+="| " + this.getTitle();
+		return result;
+	}
+
 	public int getCreatedBy() {
-		return created_by;
+		return createdBy;
 	}
 	public void setCreatedBy(int createdBy) {
-		this.created_by = createdBy;
+		this.createdBy = createdBy;
 	}
 	public Long getCreatedOn() {
-		return created_on;
+		return createdOn;
 	}
 	public void setCreatedOn(Long createdOn) {
-		this.created_on = createdOn;
+		this.createdOn = createdOn;
 	}
 	public String getEstimate() {
 		return estimate;
@@ -55,10 +75,10 @@ public class Case {
 		this.estimate = estimate;
 	}
 	public String getEstimateForecast() {
-		return estimate_forecast;
+		return estimateForecast;
 	}
 	public void setEstimateForecast(String estimateForecast) {
-		this.estimate_forecast = estimateForecast;
+		this.estimateForecast = estimateForecast;
 	}
 	public int getId() {
 		return id;
@@ -67,16 +87,16 @@ public class Case {
 		this.id = id;
 	}
 	public int getMilestoneId() {
-		return milestone_id;
+		return milestoneId;
 	}
 	public void setMilestoneId(int milestoneId) {
-		this.milestone_id = milestoneId;
+		this.milestoneId = milestoneId;
 	}
 	public int getPriorityId() {
-		return priority_id;
+		return priorityId;
 	}
 	public void setPriorityId(int priorityId) {
-		this.priority_id = priorityId;
+		this.priorityId = priorityId;
 	}
 	public String getRefs() {
 		return refs;
@@ -85,22 +105,22 @@ public class Case {
 		this.refs = refs;
 	}
 	public int getSectionId() {
-		return section_id;
+		return sectionId;
 	}
 	public void setSectionId(int sectionId) {
-		this.section_id = sectionId;
+		this.sectionId = sectionId;
 	}
 	public int getSuiteId() {
-		return suite_id;
+		return suiteId;
 	}
 	public void setSuiteId(int suiteId) {
-		this.suite_id = suiteId;
+		this.suiteId = suiteId;
 	}
 	public int getTemplateId() {
-		return template_id;
+		return templateId;
 	}
 	public void setTemplateId(int templateId) {
-		this.template_id = templateId;
+		this.templateId = templateId;
 	}
 	public String getTitle() {
 		return title;
@@ -109,22 +129,22 @@ public class Case {
 		this.title = title;
 	}
 	public String getTypeId() {
-		return type_id;
+		return typeId;
 	}
 	public void setTypeId(String typeId) {
-		this.type_id = typeId;
+		this.typeId = typeId;
 	}
 	public int getUpdatedBy() {
-		return updated_by;
+		return updatedBy;
 	}
 	public void setUpdatedBy(int updatedBy) {
-		this.updated_by = updatedBy;
+		this.updatedBy = updatedBy;
 	}
 	public Long getUpdatedOn() {
-		return updated_on;
+		return updatedOn;
 	}
 	public void setUpdatedOn(Long updatedOn) {
-		this.updated_on = updatedOn;
+		this.updatedOn = updatedOn;
 	}
 	
 	

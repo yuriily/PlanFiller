@@ -1,20 +1,23 @@
 package data;
 
-public class ConfigurationItem {
-	private int group_id;
+public class ConfigurationItem extends TestRailsEntity {
+	private int groupId;
 	private int id;
 	private String name;
+
+	public ConfigurationItem() {}
+
 	public ConfigurationItem(int groupId, int id, String name) {
 		super();
-		this.group_id = groupId;
+		this.groupId = groupId;
 		this.id = id;
 		this.name = name;
 	}
 	public int getGroupId() {
-		return group_id;
+		return groupId;
 	}
 	public void setGroupId(int groupId) {
-		this.group_id = groupId;
+		this.groupId = groupId;
 	}
 	public int getId() {
 		return id;

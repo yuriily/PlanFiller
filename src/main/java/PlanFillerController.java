@@ -63,6 +63,8 @@ public class PlanFillerController {
     @FXML
     public Button exitButton;
 
+    private int[] tempIntArray = new int[2];
+
 
     public Stage getPrimaryStage() {
         return primaryStage;
@@ -82,14 +84,40 @@ public class PlanFillerController {
                 configurationList.getItems().clear();
                 configurationItemsList.getItems().clear();
                 try {
-                    ObservableList<Plan> plans = FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(newValue.getId(), Plan.class));
-                    ObservableList<Suite> suites = FXCollections.observableArrayList(RailClient.getInstance().getSuites(newValue.getId()));
+                    //there should be max two parameters; and theoretical maximum is 3 - for test cases
+                    tempIntArray[0] = newValue.getId();
+                    ObservableList<Plan> plans = FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(tempIntArray, Plan.class));
+                    ObservableList<Suite> suites = FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(tempIntArray, Suite.class));
+                    ObservableList<Configuration> configurations = FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(tempIntArray, Configuration.class));
 
                     testPlanList.setItems(plans);
                     testSuiteList.setItems(suites);
+                    configurationList.setItems(configurations);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        testSuiteList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Suite>() {
+            @Override
+            public void changed(ObservableValue<? extends Suite> observable, Suite oldValue, Suite newValue) {
+                testCaseList.getItems().clear();
+                try {
+                    //todo bind properties to listen to selection changes for every list except for config (it will have multi selection)
+                    //project
+                    tempIntArray[0]=((Project)testProjectList.getSelectionModel().getSelectedItem()).getId();
+                    //suite
+                    tempIntArray[1]=newValue.getId();
+                    //section - skipped for now
+                    ObservableList<Case> cases = FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(tempIntArray, Case.class));
+                    if(null!=cases && cases.size()>0)
+                        testCaseList.setItems(cases);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
         });
 

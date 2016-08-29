@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Plan {
+public class Plan extends TestRailsEntity {
     private int id;
     private int assignedtoId;
     private int blockedCount;
@@ -23,7 +23,6 @@ public class Plan {
     private int passedCount;
     @JsonProperty("is_completed")
     private boolean isCompleted;
-
 	private String name;
 	private String description;
 	private int milestoneId;
@@ -38,15 +37,6 @@ public class Plan {
 		this.milestoneId = milestoneId;
 		this.entries = entries;
 	}
-
-    @Override
-    public String toString() {
-        String result = ((Integer) this.getId()).toString();
-        while(result.length()<6)
-            result=" " + result;
-        result+="| " + this.name;
-        return result;
-    }
 
 	public String getName() {
 		return name;
@@ -76,7 +66,6 @@ public class Plan {
     public int getId() {
         return id;
     }
-
     public void setId(int id) {
         this.id = id;
     }

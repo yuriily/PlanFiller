@@ -59,18 +59,27 @@ public class PlanFiller extends Application {
 
             //try to connect with existing credentials; skip if config is empty
             if(RailClient.getInstance().connect()) {
-                //todo load data into model
+                //load data into model
+                //load only the list of projects - other lists will be filled when project list change is triggered
                 planFillerController.testProjectList.setItems((ObservableList<Project>)
-                        FXCollections.observableArrayList(RailClient.getInstance().getProjects()));
+                        FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(null, Project.class)));
 
 
             } else {
                 //todo if it's not, try to open last known project and suite and configuration
             }
+            primaryStage.setScene(mainScene);
+            primaryStage.show();
+
+        }
+        else {
+            //todo write out that the options file is inaccessible
+            //open options dialog
+            primaryStage.setScene(mainScene);
+            primaryStage.show();
+            planFillerController.optionsButton.fire();
         }
 
-        primaryStage.setScene(mainScene);
-        primaryStage.show();
 
     }
 
