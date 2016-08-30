@@ -86,4 +86,40 @@ public final class RailClient {
 
     }
 
+    public <T extends TestRailsEntity> T getOneInstance(int parameterId, Class<T> instanceClass) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String prefix="";
+        T inst = instanceClass.newInstance();
+        JavaType type = mapper.getTypeFactory().constructType(inst.getClass());
+
+        if(0==parameterId) {
+            //impossible - an id is needed for every element
+            //todo write some error into console
+        }
+
+        Map<Class, String> prefixes = new HashMap<>();
+        prefixes.put(Project.class, "get_project/"+parameterId);
+        prefixes.put(Plan.class, "get_plan/"+parameterId);
+        prefixes.put(Suite.class, "get_suite/"+parameterId);
+        //todo check if we need to get one configuration only
+        //prefixes.put(Configuration.class, "get_config/"+parameterId[0]);
+        //[0] = projectId, [1] = suiteId, [2]=sectionId; [2] is not used now
+        prefixes.put(Case.class, "get_case/"+parameterId);
+
+        prefix = prefixes.get(inst.getClass());
+
+        if(null!=prefix && !prefix.isEmpty()) {
+            String tmp = client.sendGet(prefix).toString();
+            T results = mapper.readValue(tmp, type);
+            return results;
+        }
+        else {
+            //todo write out that map doesn't have such things in it
+        }
+        return null;
+
+    }
+
 }

@@ -1,6 +1,9 @@
 package data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
 
 public class Project extends TestRailsEntity {
 	private int suiteMode;
@@ -10,6 +13,13 @@ public class Project extends TestRailsEntity {
     private boolean isCompleted;
 	private String url;
 	private String announcement;
+
+	@JsonIgnore
+	private List<Plan> plans;
+	@JsonIgnore
+	private List<Suite> suites;
+	@JsonIgnore
+	private List<Configuration> configurations;
 
 	//just to enable jackson serialization
 	public Project() {}
@@ -93,7 +103,29 @@ public class Project extends TestRailsEntity {
 	public void setAnnouncement(String announcement) {
 		this.announcement = announcement;
 	}
-	
-	
 
+
+	public List<Plan> getPlans() {
+		return plans;
+	}
+
+	public void setPlans(List<Plan> plans) {
+		this.plans = plans;
+	}
+
+	public List<Suite> getSuites() {
+		return suites;
+	}
+
+	public void setSuites(List<Suite> suites) {
+		this.suites = suites;
+	}
+
+	public List<Configuration> getConfigurations() {
+		return configurations;
+	}
+
+	public void setConfigurations(List<Configuration> configurations) {
+		this.configurations = configurations;
+	}
 }

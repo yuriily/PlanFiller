@@ -1,10 +1,17 @@
 package data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.List;
+
 public class Configuration extends TestRailsEntity {
 	private ConfigurationItem[] configs;
 	private int id;
 	private String name;
 	private int projectId;
+
+	@JsonIgnore
+	private List<ConfigurationItem> configurationItems;
 
 	public Configuration() {}
 
@@ -39,7 +46,13 @@ public class Configuration extends TestRailsEntity {
 	public void setProjectId(int projectId) {
 		this.projectId = projectId;
 	}
-	
-	
 
+
+	public List<ConfigurationItem> getConfigurationItems() {
+		return configurationItems;
+	}
+
+	public void setConfigurationItems(List<ConfigurationItem> configurationItems) {
+		this.configurationItems = configurationItems;
+	}
 }

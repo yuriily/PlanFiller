@@ -88,28 +88,22 @@ public class PlanFillerController {
                 if(null==newValue)
                     return;
 
-
                 testPlanList.getItems().clear();
                 testSuiteList.getItems().clear();
                 testCaseList.getItems().clear();
                 configurationList.getItems().clear();
                 configurationItemsList.getItems().clear();
                 railModel = RailModel.getInstance();
-                railModel.setCurrentSuite(0);
-                railModel.setCurrentPlan(0);
-                railModel.setCurrentConfigurations(null);
-                railModel.setCurrentProject(newValue.getId());
                 try {
+                railModel.setSelectedProject(newValue.getId());
+                    //todo bind these things with properties
+                railModel.setSelectedSuite(0);
+                railModel.setSelectedPlan(0);
                     //there should be max two parameters; and theoretical maximum is 3 - for test cases
-                    tempIntArray[0] = newValue.getId();
-                    railModel.refresh();
-                    ObservableList<Plan> plans = FXCollections.observableArrayList(railModel.getPlans());
-                    ObservableList<Suite> suites = FXCollections.observableArrayList(railModel.getSuites());
-                    ObservableList<Configuration> configurations = FXCollections.observableArrayList(railModel.getConfigurations());
 
-                    testPlanList.setItems(plans);
-                    testSuiteList.setItems(suites);
-                    configurationList.setItems(configurations);
+                    testPlanList.setItems(railModel.getCurrentPlans());
+                    testSuiteList.setItems(railModel.getCurrentSuites());
+                    configurationList.setItems(railModel.getCurrentConfigurations());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -124,20 +118,13 @@ public class PlanFillerController {
                     return;
 
                 testCaseList.getItems().clear();
+
                 railModel = RailModel.getInstance();
-                railModel.setCurrentSuite(newValue.getId());
                 try {
+                railModel.setSelectedSuite(newValue.getId());
                     //todo bind properties to listen to selection changes for every list except for config (it will have multi selection)
-                    //project
-                    //tempIntArray[0]=((Project)testProjectList.getSelectionModel().getSelectedItem()).getId();
-                    tempIntArray[0]=railModel.getCurrentProject();
-                    //suite
-                    tempIntArray[1]=newValue.getId();
-                    //section - skipped for now
-                    railModel.refresh();
-                    ObservableList<Case> cases = FXCollections.observableArrayList(railModel.getCases());
-                    if(null!=cases && cases.size()>0)
-                        testCaseList.setItems(cases);
+                    if(null!=railModel.getCurrentCases() && railModel.getCurrentCases().size()>0)
+                        testCaseList.setItems(railModel.getCurrentCases());
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -146,40 +133,40 @@ public class PlanFillerController {
             }
         });
 
-        configurationList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Configuration>() {
-            @Override
-            public void changed(ObservableValue<? extends Configuration> observable, Configuration oldValue, Configuration newValue) {
-                if(null==newValue)
-                    return;
-
-
-                List<Configuration> selectedConfigs = configurationList.getSelectionModel().getSelectedItems();
-
-                //show configuration items only when only one configuration is selected
-                if(selectedConfigs.size()==1) {
-                    int[] tempInt = new int[]{newValue.getId()};
-                    railModel.setCurrentConfigurations(tempInt);
-                    try {
-                        railModel.refresh();
-                        ObservableList<ConfigurationItem> configurationItems = FXCollections.observableArrayList(railModel.getConfigurationItems());
-                        if(null!=configurationItems && configurationItems.size()>0)
-                            configurationItemsList.setItems(configurationItems);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                //otherwise just update the model - this info will be needed to build a config*config table
-                if(selectedConfigs.size()>1) {
-                    int[] tempInt = new int[selectedConfigs.size()];
-                    int iter=0;
-                    for(Configuration config : selectedConfigs) {
-                        tempInt[iter++] = config.getId();
-                    }
-                    railModel.setCurrentConfigurations(tempInt);
-                }
-            }
-        });
+//        configurationList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Configuration>() {
+//            @Override
+//            public void changed(ObservableValue<? extends Configuration> observable, Configuration oldValue, Configuration newValue) {
+//                if(null==newValue)
+//                    return;
+//
+//                configurationItemsList.getItems().clear();
+//
+//                List<Configuration> selectedConfigs = configurationList.getSelectionModel().getSelectedItems();
+//
+//                //show configuration items only when only one configuration is selected
+//                if(selectedConfigs.size()==1) {
+//                    int[] tempInt = new int[]{newValue.getId()};
+//                    railModel.setSelectedConfigurations(tempInt);
+//                    try {
+//                        ObservableList<ConfigurationItem> configurationItems = FXCollections.observableArrayList(railModel.getConfigurationItems());
+//                        if(null!=configurationItems && configurationItems.size()>0)
+//                            configurationItemsList.setItems(configurationItems);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                //otherwise just update the model - this info will be needed to build a config*config table
+//                if(selectedConfigs.size()>1) {
+//                    int[] tempInt = new int[selectedConfigs.size()];
+//                    int iter=0;
+//                    for(Configuration config : selectedConfigs) {
+//                        tempInt[iter++] = config.getId();
+//                    }
+//                    railModel.setCurrentConfigurations(tempInt);
+//                }
+//            }
+//        });
 
         optionsButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {

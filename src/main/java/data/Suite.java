@@ -1,6 +1,9 @@
 package data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
 
 public class Suite extends TestRailsEntity {
 	private Long completedOn;
@@ -15,6 +18,9 @@ public class Suite extends TestRailsEntity {
 	private String name;
 	private int projectId;
 	private String url;
+
+	@JsonIgnore
+	private List<Case> cases;
 
 	public Suite() {
 	}
@@ -98,5 +104,13 @@ public class Suite extends TestRailsEntity {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public List<Case> getCases() {
+		return cases;
+	}
+
+	public void setCases(List<Case> cases) {
+		this.cases = cases;
 	}
 }
