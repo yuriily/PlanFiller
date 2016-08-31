@@ -99,7 +99,6 @@ public class PlanFillerController {
                     //todo bind these things with properties
                 railModel.setSelectedSuite(0);
                 railModel.setSelectedPlan(0);
-                    //there should be max two parameters; and theoretical maximum is 3 - for test cases
 
                     testPlanList.setItems(railModel.getCurrentPlans());
                     testSuiteList.setItems(railModel.getCurrentSuites());
@@ -133,45 +132,42 @@ public class PlanFillerController {
             }
         });
 
-//        configurationList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Configuration>() {
-//            @Override
-//            public void changed(ObservableValue<? extends Configuration> observable, Configuration oldValue, Configuration newValue) {
-//                if(null==newValue)
-//                    return;
-//
-//                configurationItemsList.getItems().clear();
-//
-//                List<Configuration> selectedConfigs = configurationList.getSelectionModel().getSelectedItems();
-//
-//                //show configuration items only when only one configuration is selected
-//                if(selectedConfigs.size()==1) {
-//                    int[] tempInt = new int[]{newValue.getId()};
-//                    railModel.setSelectedConfigurations(tempInt);
-//                    try {
-//                        ObservableList<ConfigurationItem> configurationItems = FXCollections.observableArrayList(railModel.getConfigurationItems());
-//                        if(null!=configurationItems && configurationItems.size()>0)
-//                            configurationItemsList.setItems(configurationItems);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//                //otherwise just update the model - this info will be needed to build a config*config table
-//                if(selectedConfigs.size()>1) {
-//                    int[] tempInt = new int[selectedConfigs.size()];
-//                    int iter=0;
-//                    for(Configuration config : selectedConfigs) {
-//                        tempInt[iter++] = config.getId();
-//                    }
-//                    railModel.setCurrentConfigurations(tempInt);
-//                }
-//            }
-//        });
+        configurationList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Configuration>() {
+            @Override
+            public void changed(ObservableValue<? extends Configuration> observable, Configuration oldValue, Configuration newValue) {
+                if(null==newValue)
+                    return;
+
+                configurationItemsList.getItems().clear();
+
+                railModel=RailModel.getInstance();
+
+                List<Configuration> selectedConfigs = configurationList.getSelectionModel().getSelectedItems();
+                int[] params = new int[selectedConfigs.size()];
+                int iter=0;
+                for (Configuration config: selectedConfigs)
+                    params[iter++] = config.getId();
+                try {
+                railModel.setSelectedConfigurations(params);
+                    configurationItemsList.setItems(railModel.getCurrentConfigurationItems());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+        });
 
         optionsButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
             public void handle(ActionEvent event) {
                 openOptionsPanel(event);
             }
+        });
+
+        previewPlanButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) { refreshTable(event); }
         });
     }
 
@@ -188,6 +184,23 @@ public class PlanFillerController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void refreshTable(ActionEvent event) {
+        railModel=RailModel.getInstance();
+        if(railModel.getSelectedSuite()!=0 && railModel.getSelectedConfigurations().length==1) {
+            //make a table as cases*configuration
+        }
+        else {
+            if(railModel.getSelectedConfigurations().length==2) {
+                //make a table as configuration*configuration
+            }
+            else {
+                //todo write out that only one suite and one to two configurations should be selected
+
+            }
+        }
+
     }
 
 

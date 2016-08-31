@@ -16,7 +16,7 @@
                 <HBox>
                     <children>
                         <Label text="URL to testrail instance" minWidth="200.0"/>
-                        <TextField fx:id="urlTextField" minWidth="300.0" promptText="URL like http://...com/testrail/"/>
+                        <TextField fx:id="urlTextField" minWidth="300.0" text="https://testrail.ee.playtech.corp/testrail/" promptText="URL like http://...com/testrail/"/>
                     </children>
                 </HBox>
                 <HBox>

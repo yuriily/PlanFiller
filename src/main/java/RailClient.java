@@ -29,9 +29,11 @@ public final class RailClient {
 
 
     public boolean connect() {
-        if(OptionsValues.getInstance().getRailsURL() != null
-                && OptionsValues.getInstance().getUsername() != null
-                && OptionsValues.getInstance().getPassword() != null) {
+        OptionsValues optionsValues = OptionsValues.getInstance();
+        if(optionsValues.getRailsURL() != null
+                && optionsValues.getUsername() != null
+                && optionsValues.getPassword() != null
+                && !optionsValues.getRailsURL().isEmpty()) {
             client = new APIClient(OptionsValues.getInstance().getRailsURL());
             client.setUser(OptionsValues.getInstance().getUsername());
             client.setPassword(OptionsValues.getInstance().getPassword());

@@ -3,6 +3,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Created by yuriily on 29-Aug-16.
@@ -92,7 +93,7 @@ public class RailModel {
             entityTime.put(selectedSuite, System.currentTimeMillis());
         }
         else {
-            //if the project was updated long ago, re-read it
+            //if the suite was updated long ago, re-read it
             if(System.currentTimeMillis() - entityTime.get(selectedSuite) > TIMEOUT_TIME) {
                 tempSuite = this.downloadSuite(selectedSuite);
                 cachedSuites.put(selectedSuite, tempSuite);
@@ -109,7 +110,7 @@ public class RailModel {
         return selectedConfigurations;
     }
 
-    public void setSelectedConfigurations(int[] selectedConfigurations) {
+    public void setSelectedConfigurations(int[] selectedConfigurations) throws Exception {
         this.selectedConfigurations = selectedConfigurations;
         if(selectedConfigurations==null)
             return;
@@ -117,7 +118,17 @@ public class RailModel {
         if(selectedConfigurations.length==1) {
             //only one item is selected so we can update the configuration list
             int configId = selectedConfigurations[0];
-        }
+
+            //update the project if it's old; no need to update configuration separately as they all are received by one request
+            if(System.currentTimeMillis() - entityTime.get(this.getSelectedProject()) > TIMEOUT_TIME)
+                this.setSelectedProject(this.getSelectedProject());
+
+            List<ConfigurationItem> tempList;
+            //find a configuration object by its id and extract all its items
+            Predicate<Configuration> predicate = c -> c.getId() == configId;
+            tempList = Arrays.asList(((Configuration) this.getCurrentConfigurations().stream().filter(predicate).findFirst().get()).getConfigs());
+            this.setCurrentConfigurationItems(FXCollections.observableArrayList(tempList));
+            }
     }
 
     private Project downloadProject(int projectId) throws Exception {
@@ -213,22 +224,6 @@ public class RailModel {
 //    public void refresh() throws Exception {
 //        client=RailClient.getInstance();
 //        //if there is no project selected, no sense to refresh anything
-//        if(0==currentProject)
-//            return;
-//
-//        //if there are no plans or suites yet, but the project was selected
-//        if(null==this.getPlans())
-//            this.setPlans(client.getAllInstances(this.getCurrentProject(), Plan.class));
-//        if(null==this.getSuites())
-//            this.setSuites(client.getAllInstances(this.getCurrentProject(), Suite.class));
-//        if(null==this.getConfigurations())
-//            this.setConfigurations(client.getAllInstances(this.getCurrentProject(), Configuration.class));
-//
-//        //if suite was selected first time, get cases for it
-//        if(0!=currentSuite && null==this.getCases()){
-//            int[] params = new int[] {this.getCurrentProject(), this.getCurrentSuite(), 0 } ;
-//            this.setCases(client.getAllInstances(params, Case.class));
-//        }
 //
 //        //if only one configuration was selected, refresh our configuration items each time
 //        //as it is not so time consuming
@@ -242,14 +237,6 @@ public class RailModel {
 //            }
 //        }
 //
-//        //if one hour has passed from the last update
-//        //update everything except projects
-//        if(System.currentTimeMillis() - this.lastTimeUpdated > TIMEOUT_TIME) {
-//            this.setPlans(client.getAllInstances(this.getCurrentProject(), Plan.class));
-//            this.setSuites(client.getAllInstances(this.getCurrentProject(), Suite.class));
-//            this.setConfigurations(client.getAllInstances(this.getCurrentProject(), Configuration.class));
-//            this.lastTimeUpdated = System.currentTimeMillis();
-//        }
 //
 //    }
 

@@ -51,6 +51,8 @@ public class PlanFiller extends Application {
         mainScene = new Scene(root, 1200, 600);
         optionsScene = new Scene(options,600,600);
 
+        boolean isConnectionFailed = true;
+
         //trust all certificates to enable it working with corporate proxy
         trustEveryone();
 
@@ -61,6 +63,7 @@ public class PlanFiller extends Application {
             if(RailClient.getInstance().connect()) {
                 //load data into model
                 //load only the list of projects - other lists will be filled when project list change is triggered
+                isConnectionFailed=false;
                 planFillerController.testProjectList.setItems((ObservableList<Project>)
                         FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(null, Project.class)));
 
@@ -68,17 +71,16 @@ public class PlanFiller extends Application {
             } else {
                 //todo if it's not, try to open last known project and suite and configuration
             }
-            primaryStage.setScene(mainScene);
-            primaryStage.show();
 
         }
         else {
             //todo write out that the options file is inaccessible
             //open options dialog
-            primaryStage.setScene(mainScene);
-            primaryStage.show();
-            planFillerController.optionsButton.fire();
         }
+        primaryStage.setScene(mainScene);
+        primaryStage.show();
+        if(isConnectionFailed)
+            planFillerController.optionsButton.fire();
 
 
     }
