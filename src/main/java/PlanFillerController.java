@@ -13,6 +13,8 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class PlanFillerController {
     @FXML
     public Button configurationAddButton;
     @FXML
-    public Button configurationNewFromFileButton;
+    public Button configurationFillFromFileButton;
     @FXML
     public ListView configurationItemsList;
     @FXML
@@ -60,6 +62,8 @@ public class PlanFillerController {
     public Button optionsButton;
     @FXML
     public Button exitButton;
+    @FXML
+    public TextArea consoleArea;
 
     private RailModel railModel;
     private int[] tempIntArray = new int[2];
@@ -169,6 +173,14 @@ public class PlanFillerController {
             @Override
             public void handle(ActionEvent event) { refreshTable(event); }
         });
+
+        //redirect all system data to textarea
+        Console console = new Console();
+        PrintStream printStream = new PrintStream(console,true);
+        System.setOut(printStream);
+        System.setErr(printStream);
+        System.err.flush();
+        System.out.flush();
     }
 
     public void openOptionsPanel(ActionEvent event) {
@@ -201,6 +213,15 @@ public class PlanFillerController {
             }
         }
 
+    }
+
+
+    //this is to redirect all system output to textarea
+    private class Console extends OutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            consoleArea.appendText(String.valueOf((char)b));
+        }
     }
 
 

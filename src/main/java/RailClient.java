@@ -78,11 +78,14 @@ public final class RailClient {
         prefix = prefixes.get(inst.getClass());
 
         if(null!=prefix && !prefix.isEmpty()) {
+            System.out.println("Requesting TestRail with: '"+prefix+"'");
             ArrayList<T> results = mapper.readValue(client.sendGet(prefix).toString(), type);
             return results;
         }
         else {
-            //todo write out that map doesn't have such things in it
+            //our map doesn't have such things in it; maybe it should be updated
+            System.out.println("I don't know how to request TestRail for item:'"+type.toString()+"'");
+
         }
         return null;
 
@@ -98,7 +101,7 @@ public final class RailClient {
 
         if(0==parameterId) {
             //impossible - an id is needed for every element
-            //todo write some error into console
+            System.out.println("No ID was passed to get an instance of '"+type.toString()+"'");
         }
 
         Map<Class, String> prefixes = new HashMap<>();
@@ -113,12 +116,14 @@ public final class RailClient {
         prefix = prefixes.get(inst.getClass());
 
         if(null!=prefix && !prefix.isEmpty()) {
+            System.out.println("Requesting TestRail with: '"+prefix+"'");
             String tmp = client.sendGet(prefix).toString();
             T results = mapper.readValue(tmp, type);
             return results;
         }
         else {
-            //todo write out that map doesn't have such things in it
+            //our map doesn't have such things in it; maybe it should be updated
+            System.out.println("I don't know how to request TestRail for item:'"+type.toString()+"'");
         }
         return null;
 

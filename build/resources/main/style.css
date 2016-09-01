@@ -1,0 +1,21 @@
+.list-view {
+-fx-font-size: 10pt;
+-fx-font-family: "Lucida Console";
+-fx-background: rgb(180,180,180);
+}
+.text-area {
+-fx-font-size: 10pt;
+-fx-text-fill: #000080;
+-fx-font-family: "Lucida Console";
+-fx-background: rgb(180,180,180);
+}
+
+.label {
+-fx-padding: 5 5 5 20;
+-fx-text-fill: #000080;
+-fx-font-weight: bold;
+}
+
+.separator {
+-fx-margin: 20 5 20 5;
+}

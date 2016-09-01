@@ -69,7 +69,7 @@ public class RailModel {
             }
         }
         if(null==tempProject)
-            tempProject = this.downloadProject(selectedProject);
+            tempProject = this.cachedProjects.get(selectedProject);
         this.setCurrentPlans(FXCollections.observableArrayList(tempProject.getPlans()));
         this.setCurrentSuites(FXCollections.observableArrayList(tempProject.getSuites()));
         this.setCurrentConfigurations(FXCollections.observableArrayList(tempProject.getConfigurations()));
@@ -101,7 +101,7 @@ public class RailModel {
             }
         }
         if(null==tempSuite)
-            tempSuite = this.downloadSuite(selectedSuite);
+            tempSuite = this.cachedSuites.get(selectedSuite);
         this.setCurrentCases(FXCollections.observableArrayList(tempSuite.getCases()));
 
     }

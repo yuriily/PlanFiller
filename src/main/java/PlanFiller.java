@@ -49,6 +49,7 @@ public class PlanFiller extends Application {
         primaryStage.setMinHeight(600);
         primaryStage.setMinWidth(1200);
         mainScene = new Scene(root, 1200, 600);
+        mainScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         optionsScene = new Scene(options,600,600);
 
         boolean isConnectionFailed = true;
@@ -64,6 +65,7 @@ public class PlanFiller extends Application {
                 //load data into model
                 //load only the list of projects - other lists will be filled when project list change is triggered
                 isConnectionFailed=false;
+                System.out.println("Filling project list...");
                 planFillerController.testProjectList.setItems((ObservableList<Project>)
                         FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(null, Project.class)));
 
@@ -74,8 +76,7 @@ public class PlanFiller extends Application {
 
         }
         else {
-            //todo write out that the options file is inaccessible
-            //open options dialog
+            System.out.println("Cannot load configuration file. Please add new configuration");
         }
         primaryStage.setScene(mainScene);
         primaryStage.show();

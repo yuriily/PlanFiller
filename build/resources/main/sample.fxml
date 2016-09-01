@@ -58,8 +58,8 @@
                                 <ListView fx:id="configurationList" maxWidth="Infinity" prefHeight="1000.0">
                                 </ListView>
                                 <Button fx:id="configurationAddButton" maxWidth="Infinity" text="Add configuration"/>
-                                <Button fx:id="configurationNewFromFileButton" maxWidth="Infinity"
-                                        text="New from file..."/>
+                                <Button fx:id="configurationFillFromFileButton" maxWidth="Infinity"
+                                        text="Fill from file..."/>
                             </children>
                         </VBox>
                         <VBox maxWidth="Infinity">
