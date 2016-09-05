@@ -1,4 +1,5 @@
 import data.*;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,7 +57,7 @@ public class PlanFillerController {
     @FXML
     public Button fillPlanButton;
     @FXML
-    public TableView tableView;
+    public TableView<RailRecord> tableView;
     @FXML
     public CheckBox transposeCheckbox;
     @FXML
@@ -308,11 +310,29 @@ public class PlanFillerController {
     public void refreshTableFromRecordSet(RailRecordSet recordSet) {
         tableView.getItems().clear();
         tableView.getColumns().clear();
+        //the table will contain the list of RailRecord objects
         tableView.setPlaceholder(new Label("Refreshing table..."));
 
         //add table columns
+        //first column goes for header row, class name is in the header
+        TableColumn<RailRecord, String> headerColumn=new TableColumn<>(((TestRailsEntity)recordSet.getRows().get(0).getRowValue()).getClass().toString());
+        headerColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RailRecord, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<RailRecord, String> param) {
+                return new SimpleStringProperty(param.getValue().getRowValue().getName());
+            }
+        });
+        tableView.getColumns().add(headerColumn);
+
+        //other column set is as long as the list of second entities
         for(TestRailsEntity columnEntity : recordSet.getColumnNames()) {
             TableColumn<RailRecord, String> column = new TableColumn<>(columnEntity.getName());
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RailRecord, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<RailRecord, String> param) {
+                    return null;
+                }
+            });
             tableView.getColumns().add(column);
         }
         tableView.setItems(FXCollections.observableList(recordSet.getRows()));
