@@ -131,6 +131,7 @@ public class RailModel {
             }
     }
 
+    //get new project from testrail
     private Project downloadProject(int projectId) throws Exception {
         client = RailClient.getInstance();
         Project project = client.getOneInstance(projectId, Project.class);
@@ -140,6 +141,7 @@ public class RailModel {
         return project;
     }
 
+    //get new test suite from testrail
     private Suite downloadSuite(int suiteId) throws Exception {
         client=RailClient.getInstance();
         Suite suite = client.getOneInstance(suiteId, Suite.class);
@@ -220,24 +222,5 @@ public class RailModel {
         this.selectedConfigurationItem = selectedConfigurationItem;
     }
 
-    //refresh cache if time has passed
-//    public void refresh() throws Exception {
-//        client=RailClient.getInstance();
-//        //if there is no project selected, no sense to refresh anything
-//
-//        //if only one configuration was selected, refresh our configuration items each time
-//        //as it is not so time consuming
-//        if(null!=this.getConfigurations()) {
-//            if(null!=this.getCurrentConfigurations() && 1==this.getCurrentConfigurations().length) {
-//                List<ConfigurationItem> tempList;
-//                //find a configuration object by its id and extract all its items
-//                Predicate<Configuration> predicate = c -> c.getId() == this.getCurrentConfigurations()[0];
-//                tempList = Arrays.asList(((Configuration) this.getConfigurations().stream().filter(predicate).findFirst().get()).getConfigs());
-//                this.setConfigurationItems(tempList);
-//            }
-//        }
-//
-//
-//    }
 
 }

@@ -57,13 +57,13 @@ public class PlanFiller extends Application {
         //trust all certificates to enable it working with corporate proxy
         trustEveryone();
 
-        //try to load config
+        //try to load config from file
         if(loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH)) {
 
             //try to connect with existing credentials; skip if config is empty
             if(RailClient.getInstance().connect()) {
                 //load data into model
-                //load only the list of projects - other lists will be filled when project list change is triggered
+                //load only the list of projects - other lists will be filled when project will be selected from list
                 isConnectionFailed=false;
                 System.out.println("Filling project list...");
                 planFillerController.testProjectList.setItems((ObservableList<Project>)
@@ -71,12 +71,13 @@ public class PlanFiller extends Application {
 
 
             } else {
-                //todo if it's not, try to open last known project and suite and configuration
+                //cannot connect now; nothing to show
+                System.out.println("Cannot connect to TestRail. Check your Internet connection or TestRails parameters.");
             }
 
         }
         else {
-            System.out.println("Cannot load configuration file. Please add new configuration");
+            System.out.println("Cannot load configuration file. Please add new configuration.");
         }
         primaryStage.setScene(mainScene);
         primaryStage.show();

@@ -78,7 +78,7 @@
     </center>
 
     <right>
-        <VBox maxWidth="200">
+        <VBox fx:id="rightBox" prefWidth="200">
             <children>
                 <Button fx:id="importPlanButton" text="Import plan" maxWidth="Infinity"/>
                 <Button fx:id="exportPlanButton" text="Export plan" maxWidth="Infinity"/>

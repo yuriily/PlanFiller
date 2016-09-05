@@ -17,5 +17,10 @@
 }
 
 .separator {
--fx-margin: 20 5 20 5;
+-fx-margin: 5;
+-fx-padding: 5;
+}
+
+.table-view {
+-fx-font-size: 10pt;
 }

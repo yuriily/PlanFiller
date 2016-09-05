@@ -2,7 +2,6 @@ import data.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -10,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -64,6 +64,8 @@ public class PlanFillerController {
     public Button exitButton;
     @FXML
     public TextArea consoleArea;
+    @FXML
+    public VBox rightBox;
 
     private RailModel railModel;
     private int[] tempIntArray = new int[2];
@@ -83,6 +85,14 @@ public class PlanFillerController {
         configurationList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
 
+        //redirect all system data to textarea
+        Console console = new Console();
+        PrintStream printStream = new PrintStream(console,true);
+        System.setOut(printStream);
+        System.setErr(printStream);
+        System.err.flush();
+        System.out.flush();
+
         //add listeners to fill in other lists
 
         //when a project is selected, a list of plans, suites and configurations will be updated
@@ -92,6 +102,7 @@ public class PlanFillerController {
                 if(null==newValue)
                     return;
 
+                openTableView(false);
                 testPlanList.getItems().clear();
                 testSuiteList.getItems().clear();
                 testCaseList.getItems().clear();
@@ -120,6 +131,7 @@ public class PlanFillerController {
                 if(null==newValue)
                     return;
 
+                openTableView(false);
                 testCaseList.getItems().clear();
 
                 railModel = RailModel.getInstance();
@@ -142,6 +154,7 @@ public class PlanFillerController {
                 if(null==newValue)
                     return;
 
+                openTableView(false);
                 configurationItemsList.getItems().clear();
 
                 railModel=RailModel.getInstance();
@@ -162,6 +175,36 @@ public class PlanFillerController {
 
         });
 
+        testPlanList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Plan>() {
+            @Override
+            public void changed(ObservableValue<? extends Plan> observable, Plan oldValue, Plan newValue) {
+                if(null==newValue)
+                    return;
+
+                openTableView(false);
+            }
+        });
+        testCaseList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Case>() {
+            @Override
+            public void changed(ObservableValue<? extends Case> observable, Case oldValue, Case newValue) {
+                if(null==newValue)
+                    return;
+
+                openTableView(false);
+            }
+        });
+        configurationItemsList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ConfigurationItem>() {
+            @Override
+            public void changed(ObservableValue<? extends ConfigurationItem> observable, ConfigurationItem oldValue, ConfigurationItem newValue) {
+                if(null==newValue)
+                    return;
+
+                openTableView(false);
+            }
+        });
+
+
+
         optionsButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -174,15 +217,10 @@ public class PlanFillerController {
             public void handle(ActionEvent event) { refreshTable(event); }
         });
 
-        //redirect all system data to textarea
-        Console console = new Console();
-        PrintStream printStream = new PrintStream(console,true);
-        System.setOut(printStream);
-        System.setErr(printStream);
-        System.err.flush();
-        System.out.flush();
+
     }
 
+    //opens options dialog
     public void openOptionsPanel(ActionEvent event) {
         Stage stage = new Stage();
         stage.setTitle("Options");
@@ -198,20 +236,87 @@ public class PlanFillerController {
         }
     }
 
+    //refreshes the table accroding to current selection
+    //the following combinations are possible:
+    //test suite + configuration
+    //configuration + configuration (then, when you reimport such csv, you should be prompted to indicate test case or suite
+
     public void refreshTable(ActionEvent event) {
+        tableView.getItems().clear();
+        tableView.getColumns().clear();
+        tableView.setPlaceholder(new Label("Loading data..."));
+
         railModel=RailModel.getInstance();
-        if(railModel.getSelectedSuite()!=0 && railModel.getSelectedConfigurations().length==1) {
-            //make a table as cases*configuration
+        RailRecordSet railRecordSet = new RailRecordSet();
+
+        if(railModel.getSelectedSuite()!=0 && railModel.getSelectedConfigurations()!=null && railModel.getSelectedConfigurations().length==1) {
+            //make a record as cases*configuration
+            railRecordSet.setColumnNames((List)railModel.getCurrentConfigurationItems());
+            //we don't have any values in cells, so only the row headers will be retrieved
+            for(Case testCase : railModel.getCurrentCases()) {
+                RailRecord record = new RailRecord();
+                record.setRowValue(testCase);
+                railRecordSet.addRow(record);
+            }
+
         }
         else {
-            if(railModel.getSelectedConfigurations().length==2) {
+            if(railModel.getSelectedConfigurations()!=null && railModel.getSelectedConfigurations().length==2) {
                 //make a table as configuration*configuration
+
+                //selection from configurations list will be erased, so I need to preserve both items
+                int[] configOneId = new int[] {railModel.getSelectedConfigurations()[0]};
+                int[] configTwoId = new int[] {railModel.getSelectedConfigurations()[1]};
+
+                try {
+                    //here are the columns
+                    railModel.setSelectedConfigurations(configOneId);
+                    List<ConfigurationItem> configOneList = railModel.getCurrentConfigurationItems();
+                    railRecordSet.setColumnNames((List)configOneList);
+
+                    railModel.setSelectedConfigurations(configTwoId);
+                    List<ConfigurationItem> configTwoList = railModel.getCurrentConfigurationItems();
+                    for(ConfigurationItem configItem : configTwoList) {
+                        RailRecord record = new RailRecord();
+                        record.setRowValue(configItem);
+                        railRecordSet.addRow(record);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             else {
-                //todo write out that only one suite and one to two configurations should be selected
+                //only one suite and one to two configurations should be selected
+                System.out.println("Wrong combination of test entities selected.");
+                System.out.println("Try to select two configurations or a test suite and one configuration.");
+                tableView.setPlaceholder(new Label("Wrong selection"));
 
             }
         }
+        //there is some data for at least one row and column
+        if(railRecordSet.getRows()!=null && railRecordSet.getColumnNames()!=null) {
+            //todo update the table
+            refreshTableFromRecordSet(railRecordSet);
+            openTableView(true);
+
+
+        }
+
+    }
+
+    public void refreshTableFromRecordSet(RailRecordSet recordSet) {
+        tableView.getItems().clear();
+        tableView.getColumns().clear();
+        tableView.setPlaceholder(new Label("Refreshing table..."));
+
+        //add table columns
+        for(TestRailsEntity columnEntity : recordSet.getColumnNames()) {
+            TableColumn<RailRecord, String> column = new TableColumn<>(columnEntity.getName());
+            tableView.getColumns().add(column);
+        }
+        tableView.setItems(FXCollections.observableList(recordSet.getRows()));
+        tableView.refresh();
 
     }
 
@@ -221,6 +326,19 @@ public class PlanFillerController {
         @Override
         public void write(int b) throws IOException {
             consoleArea.appendText(String.valueOf((char)b));
+        }
+    }
+
+    public void openTableView(boolean shouldOpen) {
+        if(shouldOpen) {
+            tableView.setPrefWidth(800.0);
+            rightBox.setPrefWidth(800.0);
+            rightBox.setMinWidth(800.0);
+
+        } else {
+            tableView.setPrefWidth(200.0);
+            rightBox.setPrefWidth(200.0);
+            rightBox.setMinWidth(200.0);
         }
     }
 

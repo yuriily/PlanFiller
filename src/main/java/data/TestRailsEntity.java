@@ -24,6 +24,19 @@ public class TestRailsEntity {
         return result;
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (object == null) {return false; }
+        if (getClass() != object.getClass()) { return false; }
+        if(getId() == ((TestRailsEntity)object).getId()) { return true; }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     public String getName() {
         return name;
     }
