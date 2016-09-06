@@ -10,6 +10,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -313,31 +314,57 @@ public class PlanFillerController {
         //the table will contain the list of RailRecord objects
         tableView.setPlaceholder(new Label("Refreshing table..."));
 
+        tableView.setItems(FXCollections.observableList(recordSet.getRows()));
+        tableView.setEditable(true);
+        //doesn't work for now, but should be implemented some day
+        //otherwise double clicking the item will erase the text
+//        Callback<TableColumn, TableCell> cellCallback = new Callback<TableColumn, TableCell>() {
+//          public TableCell call(TableColumn col) {
+//              return new EditingCell();
+//          }
+//        };
+
         //add table columns
-        //first column goes for header row, class name is in the header
-        TableColumn<RailRecord, String> headerColumn=new TableColumn<>(((TestRailsEntity)recordSet.getRows().get(0).getRowValue()).getClass().toString());
+        //first column goes for header row, class name is in the header: "row \ column"
+        TableColumn<RailRecord, String> headerColumn=new TableColumn<>(
+                ((TestRailsEntity)recordSet.getRows().get(0).getRowValue()).getClass().getSimpleName() + " \\ " +
+        recordSet.getColumnNames().get(0).getClass().getSimpleName());
         headerColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RailRecord, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<RailRecord, String> param) {
-                return new SimpleStringProperty(param.getValue().getRowValue().getName());
+                return new SimpleStringProperty(param.getValue().getRowValue().toString());
             }
         });
         tableView.getColumns().add(headerColumn);
 
         //other column set is as long as the list of second entities
         for(TestRailsEntity columnEntity : recordSet.getColumnNames()) {
-            TableColumn<RailRecord, String> column = new TableColumn<>(columnEntity.getName());
+            TableColumn<RailRecord, String> column = new TableColumn<>(columnEntity.toString());
+            column.setCellFactory(TextFieldTableCell.forTableColumn());
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RailRecord, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<RailRecord, String> param) {
+                    //get a value from the map
                     return null;
+                }
+            });
+            //update the corresponding railrecord
+            column.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<RailRecord, String>>() {
+                @Override
+                public void handle(TableColumn.CellEditEvent<RailRecord, String> event) {
+                    updateRailRecord(event);
                 }
             });
             tableView.getColumns().add(column);
         }
-        tableView.setItems(FXCollections.observableList(recordSet.getRows()));
         tableView.refresh();
 
+    }
+
+    public void updateRailRecord(TableColumn.CellEditEvent<RailRecord, String> event) {
+        System.out.println("Row value: " +event.getRowValue().getRowValue().toString());
+        System.out.println("Column value: "+event.getTableColumn().getText());
+        System.out.println(event.toString());
     }
 
 
