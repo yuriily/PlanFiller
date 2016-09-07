@@ -25,6 +25,15 @@ public class RailRecordSet {
         this.rows.add(record);
     }
 
+    //searches for RailRecord by its row
+    public RailRecord getRecordFromRow(TestRailsEntity railsEntity) {
+        for(RailRecord railRecord : rows) {
+            if(railRecord.getRowValue().equals(railsEntity))
+                return railRecord;
+        }
+        return null;
+    }
+
     public List<TestRailsEntity> getColumnNames() {
         return columnNames;
     }
@@ -32,4 +41,5 @@ public class RailRecordSet {
     public void setColumnNames(List<TestRailsEntity> columnNames) {
         this.columnNames = columnNames;
     }
+
 }

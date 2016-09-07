@@ -12,9 +12,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.supercsv.io.ICsvMapWriter;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -71,6 +74,7 @@ public class PlanFillerController {
     public VBox rightBox;
 
     private RailModel railModel;
+    private RailRecordSet railRecordSet;
     private int[] tempIntArray = new int[2];
 
 
@@ -220,6 +224,13 @@ public class PlanFillerController {
             public void handle(ActionEvent event) { refreshTable(event); }
         });
 
+        importPlanButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) { importRecordSet();
+
+            }
+        });
+
 
     }
 
@@ -250,7 +261,9 @@ public class PlanFillerController {
         tableView.setPlaceholder(new Label("Loading data..."));
 
         railModel=RailModel.getInstance();
-        RailRecordSet railRecordSet = new RailRecordSet();
+        //todo ask for a confirmation - the table will be rebuilt and all the data lost
+        //reset current recordset, we don't need it anymore
+        railRecordSet = new RailRecordSet();
 
         if(railModel.getSelectedSuite()!=0 && railModel.getSelectedConfigurations()!=null && railModel.getSelectedConfigurations().length==1) {
             //make a record as cases*configuration
@@ -352,7 +365,7 @@ public class PlanFillerController {
             column.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<RailRecord, String>>() {
                 @Override
                 public void handle(TableColumn.CellEditEvent<RailRecord, String> event) {
-                    updateRailRecord(event);
+                    updateRailRecord(event, recordSet);
                 }
             });
             tableView.getColumns().add(column);
@@ -361,10 +374,21 @@ public class PlanFillerController {
 
     }
 
-    public void updateRailRecord(TableColumn.CellEditEvent<RailRecord, String> event) {
-        System.out.println("Row value: " +event.getRowValue().getRowValue().toString());
-        System.out.println("Column value: "+event.getTableColumn().getText());
-        System.out.println(event.toString());
+    //update our recordset with new values
+    public void updateRailRecord(TableColumn.CellEditEvent<RailRecord, String> event, RailRecordSet recordSet) {
+        RailRecord currentRow = event.getRowValue();
+        TestRailsEntity currentColumn = null;
+        //find column object by text in column header
+        int columnObjectId = Integer.parseInt(event.getTableColumn().getText().substring(0,6).trim());
+        for(TestRailsEntity columnObject: recordSet.getColumnNames()) {
+            if(columnObject.getId()==columnObjectId)
+                currentColumn=columnObject;
+        }
+        if(currentColumn==null) {
+            System.out.println("Cannot identify column by the following id:" + columnObjectId);
+            return;
+        }
+        currentRow.getColumnValues().put(currentColumn, event.getNewValue());
     }
 
 
@@ -387,6 +411,30 @@ public class PlanFillerController {
             rightBox.setPrefWidth(200.0);
             rightBox.setMinWidth(200.0);
         }
+    }
+
+    public void importRecordSet() {
+        if(railRecordSet==null) {
+            System.out.println("ERROR: there is nothing to import");
+            return;
+        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save as...");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
+        File file = fileChooser.showSaveDialog(primaryStage);
+        if(file != null) {
+            try {
+                //create csv and save it
+                CsvImporter importer = new CsvImporter(railRecordSet);
+                importer.writeToCSV(file.getAbsolutePath());
+                System.out.println("Map saved to file: "+file.getAbsolutePath());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
 

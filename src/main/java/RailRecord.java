@@ -1,5 +1,6 @@
 import data.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Map;
  */
 public class RailRecord {
     private TestRailsEntity rowValue;
-    private Map<TestRailsEntity, String> columnValues;
+    private Map<TestRailsEntity, String> columnValues = new HashMap<>();
 
     public TestRailsEntity getRowValue() {
         return rowValue;
