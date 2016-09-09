@@ -25,6 +25,12 @@ public class RailRecordSet {
         this.rows.add(record);
     }
 
+    public void addColumnName(TestRailsEntity entity) {
+        if(this.columnNames==null)
+            this.columnNames=new ArrayList<>();
+        this.columnNames.add(entity);
+    }
+
     //searches for RailRecord by its row
     public RailRecord getRecordFromRow(TestRailsEntity railsEntity) {
         for(RailRecord railRecord : rows) {

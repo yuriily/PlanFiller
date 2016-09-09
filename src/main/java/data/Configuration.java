@@ -2,6 +2,8 @@ package data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Configuration extends TestRailsEntity {
@@ -47,8 +49,11 @@ public class Configuration extends TestRailsEntity {
 		this.projectId = projectId;
 	}
 
-
+	//if there are no configuration items, let's populate them from existing array
 	public List<ConfigurationItem> getConfigurationItems() {
+		if(configurationItems==null && configs!=null)
+			configurationItems = Arrays.asList(configs);
+
 		return configurationItems;
 	}
 

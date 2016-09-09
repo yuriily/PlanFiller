@@ -224,11 +224,16 @@ public class PlanFillerController {
             public void handle(ActionEvent event) { refreshTable(event); }
         });
 
+        //todo I've messed up with imports and exports naming, should change all import to export and vice versa
+
         importPlanButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
-            public void handle(ActionEvent event) { importRecordSet();
+            public void handle(ActionEvent event) { exportRecordSet();  }
+        });
 
-            }
+        exportPlanButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) { importRecordSet();   }
         });
 
 
@@ -250,7 +255,7 @@ public class PlanFillerController {
         }
     }
 
-    //refreshes the table accroding to current selection
+    //refreshes the table according to current selection
     //the following combinations are possible:
     //test suite + configuration
     //configuration + configuration (then, when you reimport such csv, you should be prompted to indicate test case or suite
@@ -357,8 +362,8 @@ public class PlanFillerController {
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RailRecord, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<RailRecord, String> param) {
-                    //get a value from the map
-                    return null;
+                    //todo get a value from the map
+                    return new SimpleStringProperty(param.getValue().getColumnValues().get(columnEntity));
                 }
             });
             //update the corresponding railrecord
@@ -415,7 +420,7 @@ public class PlanFillerController {
 
     public void importRecordSet() {
         if(railRecordSet==null) {
-            System.out.println("ERROR: there is nothing to import");
+            System.out.println("ERROR: there is nothing to import.");
             return;
         }
         FileChooser fileChooser = new FileChooser();
@@ -430,6 +435,40 @@ public class PlanFillerController {
                 importer.writeToCSV(file.getAbsolutePath());
                 System.out.println("Map saved to file: "+file.getAbsolutePath());
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public void exportRecordSet() {
+        //if there is no project selected, then there is no sense in exporting the data now - configurations won't be resolved
+        if(railModel.getSelectedProject()==0) {
+            System.out.println("Please select a project first, otherwise it won't be possible to work with configurations.");
+            return;
+        }
+
+        if(railRecordSet!=null) {
+            //todo alert the user that current table will be erased
+        }
+        //Important! Empty the recordset so there is nothing left from previous table
+        railRecordSet = new RailRecordSet();
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open the file");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
+        File file = fileChooser.showOpenDialog(primaryStage);
+        if(file!=null) {
+            try {
+                //pass our empty recordset there
+                CsvImporter importer = new CsvImporter(railRecordSet, railModel);
+                importer.readFromCSV(file.getAbsolutePath());
+
+                //update the table view
+                refreshTableFromRecordSet(railRecordSet);
+                openTableView(true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
