@@ -1,4 +1,5 @@
 import com.codepine.api.testrail.TestRail;
+import com.codepine.api.testrail.model.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
@@ -6,6 +7,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import data.*;
+import data.Case;
+import data.Configuration;
+import data.Plan;
+import data.Project;
+import data.Suite;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +25,8 @@ public final class RailClient {
     public static final RailClient instance = new RailClient();
 
     private APIClient client;
+
+    //todo move all prefixes hashmaps out of the methods
 
     private RailClient() {
     }
@@ -57,7 +65,6 @@ public final class RailClient {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        String prefix="";
         T inst = instanceClass.newInstance();
         JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, inst.getClass());
 
@@ -75,7 +82,7 @@ public final class RailClient {
         if(parameterId.length>1)
             prefixes.put(Case.class, "get_cases/"+parameterId[0]+"&suite_id="+parameterId[1]);
 
-        prefix = prefixes.get(inst.getClass());
+        String prefix = prefixes.get(inst.getClass());
 
         if(null!=prefix && !prefix.isEmpty()) {
             System.out.println("Requesting TestRail with: '"+prefix+"'");
@@ -95,7 +102,6 @@ public final class RailClient {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        String prefix="";
         T inst = instanceClass.newInstance();
         JavaType type = mapper.getTypeFactory().constructType(inst.getClass());
 
@@ -113,7 +119,7 @@ public final class RailClient {
         //[0] = projectId, [1] = suiteId, [2]=sectionId; [2] is not used now
         prefixes.put(Case.class, "get_case/"+parameterId);
 
-        prefix = prefixes.get(inst.getClass());
+        String prefix = prefixes.get(inst.getClass());
 
         if(null!=prefix && !prefix.isEmpty()) {
             System.out.println("Requesting TestRail with: '"+prefix+"'");
@@ -126,6 +132,35 @@ public final class RailClient {
             System.out.println("I don't know how to request TestRail for item:'"+type.toString()+"'");
         }
         return null;
+
+    }
+
+    public boolean deleteOneInstance(int parameterId, Class instanceClass) {
+        Map<Class,String> prefixes = new HashMap<>();
+        prefixes.put(ConfigurationItem.class, "delete_config/"+parameterId);
+        String prefix = prefixes.get(instanceClass);
+        try {
+            System.out.println("Requesting TestRail with: '"+prefix+"'");
+            //post request cannot accept second parameter as null, so we need to pass something there
+            //empty map is OK
+            Map<String,String> emptyMapForPost = new HashMap<>();
+            emptyMapForPost.put("","");
+            String results = client.sendPost(prefix, emptyMapForPost).toString();
+            if(results.equals("{}"))
+                System.out.println("Deleted successfully.");
+            else {
+                //todo print out some error
+                //todo create a map with error codes
+                //400 - invalid/unknown config
+                //403 - no permissions
+                //404 - no access
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
 
     }
 

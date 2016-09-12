@@ -51,6 +51,7 @@ public class PlanFiller extends Application {
         mainScene = new Scene(root, 1200, 600);
         mainScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         optionsScene = new Scene(options,600,600);
+        optionsScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
 
         boolean isConnectionFailed = true;
 

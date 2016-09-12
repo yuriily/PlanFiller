@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 /**
  * Created by yuriily on 29-Aug-16.
+ *
  */
 public class RailModel {
     private final static int TIMEOUT_TIME = 60*60*1000;

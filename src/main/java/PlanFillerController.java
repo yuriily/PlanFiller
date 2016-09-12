@@ -1,4 +1,5 @@
 import data.*;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -7,12 +8,14 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.supercsv.io.ICsvMapWriter;
@@ -23,6 +26,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class PlanFillerController {
     private Stage primaryStage;
@@ -59,7 +63,7 @@ public class PlanFillerController {
     @FXML
     public Button previewPlanButton;
     @FXML
-    public Button fillPlanButton;
+    public Button uploadPlanButton;
     @FXML
     public TableView<RailRecord> tableView;
     @FXML
@@ -145,7 +149,7 @@ public class PlanFillerController {
                 try {
                 railModel.setSelectedSuite(newValue.getId());
                     //todo bind properties to listen to selection changes for every list except for config (it will have multi selection)
-                    if(null!=railModel.getCurrentCases() && railModel.getCurrentCases().size()>0)
+                    if(railModel.getCurrentCases() != null && railModel.getCurrentCases().size()>0)
                         testCaseList.setItems(railModel.getCurrentCases());
 
                 } catch (Exception e) {
@@ -154,6 +158,10 @@ public class PlanFillerController {
 
             }
         });
+
+
+        //when only one configuration is selected, list its contents
+        //if there are two ore more selected configurations, do nothing
 
         configurationList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Configuration>() {
             @Override
@@ -236,6 +244,13 @@ public class PlanFillerController {
             public void handle(ActionEvent event) { importRecordSet();   }
         });
 
+        itemRemoveButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                removeConfigurationItem();
+            }
+        });
+
 
     }
 
@@ -248,6 +263,8 @@ public class PlanFillerController {
             Parent options = optionsLoader.load();
             Scene scene = new Scene(options);
             stage.setScene(scene);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(((Node)event.getSource()).getScene().getWindow());
 //            primaryStage.hide();
             stage.show();
         } catch (IOException e) {
@@ -317,7 +334,13 @@ public class PlanFillerController {
         }
         //there is some data for at least one row and column
         if(railRecordSet.getRows()!=null && railRecordSet.getColumnNames()!=null) {
-            //todo update the table
+            //todo run this in separate thread
+//            Platform.runLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    refreshTableFromRecordSet(railRecordSet);
+//                }
+//            });
             refreshTableFromRecordSet(railRecordSet);
             openTableView(true);
 
@@ -420,7 +443,7 @@ public class PlanFillerController {
 
     public void importRecordSet() {
         if(railRecordSet==null) {
-            System.out.println("ERROR: there is nothing to import.");
+            System.out.println("ERROR: there is nothing to export.");
             return;
         }
         FileChooser fileChooser = new FileChooser();
@@ -474,6 +497,27 @@ public class PlanFillerController {
             }
         }
 
+    }
+
+    public void removeConfigurationItem() {
+        if(configurationItemsList != null && configurationItemsList.getSelectionModel().getSelectedItem() != null) {
+            //no need to get an item from the model - we don't store it there
+            //it's much faster to parse the string for id
+            int itemId = Integer.parseInt(configurationItemsList.getSelectionModel().getSelectedItem()
+                    .toString()
+                    .substring(0,6)
+                    .trim());
+            RailClient client = RailClient.getInstance();
+            client.deleteOneInstance(itemId, ConfigurationItem.class);
+
+            //remove the item without modifying the model - configuration items don't trigger any changes
+            //move the selection to the next item, so the items can be deleted with ease
+            int currentIndex = configurationItemsList.getSelectionModel().getSelectedIndex();
+            int newIndex = (currentIndex == configurationItemsList.getItems().size() - 1) ? currentIndex-1 : currentIndex;
+            configurationItemsList.getItems().remove(currentIndex);
+            configurationItemsList.getSelectionModel().select(newIndex);
+            configurationItemsList.refresh();
+        }
     }
 
 
