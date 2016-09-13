@@ -29,6 +29,7 @@
                         <Label text="Test plans" maxWidth="Infinity"/>
                         <ListView fx:id="testPlanList" prefHeight="1000.0" maxWidth="Infinity"/>
                         <Button fx:id="testPlanAddButton" text="Add plan" maxWidth="Infinity"/>
+                        <Button fx:id="testPlanEntryAddButton" text="Add entry to plan" maxWidth="Infinity"/>
                     </children>
                 </VBox>
                 <HBox style=" -fx-border-color:black; -fx-border-width: 2; -fx-border-style: solid;">

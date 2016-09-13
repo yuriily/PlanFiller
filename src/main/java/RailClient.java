@@ -164,4 +164,10 @@ public final class RailClient {
 
     }
 
+    public String tempPostPlan(int planId, Map<String,Object> postMap) throws Exception {
+        System.out.println(postMap.toString());
+        String result = client.sendPost("add_plan_entry/"+planId, postMap).toString();
+        return result;
+    }
+
 }

@@ -78,12 +78,6 @@ public class Run {
 	public void setConfig(String config) {
 		this.config = config;
 	}
-	public ArrayList<Integer> getConfigIds() {
-		return configIds;
-	}
-	public void setConfigIds(ArrayList<Integer> configIds) {
-		this.configIds = configIds;
-	}
 	public Long getCreatedOn() {
 		return createdOn;
 	}
@@ -123,9 +117,29 @@ public class Run {
 	public ArrayList<Integer> getCaseIds() {
 		return caseIds;
 	}
+
 	public void setCaseIds(ArrayList<Integer> caseIds) {
 		this.caseIds = caseIds;
 	}
+	public void setCaseId(int caseIds) {
+		ArrayList<Integer> caseIdsList = new ArrayList<>();
+		caseIdsList.add(caseIds);
+		this.caseIds = caseIdsList;
+	}
+
+	public ArrayList<Integer> getConfigIds() {
+		return configIds;
+	}
+	public void setConfigIds(ArrayList<Integer> configIds) {
+		this.configIds = configIds;
+	}
+	public void setConfigId(int configIds) {
+		ArrayList<Integer> configIdsList = new ArrayList<>();
+		configIdsList.add(configIds);
+		this.configIds = configIdsList;
+	}
+
+
 	public Integer getId() {
 		return id;
 	}

@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Created by yuriily on 05-Sep-16.
  */
-public class RailRecord {
+public class RailRecord implements Cloneable {
     private TestRailsEntity rowValue;
     private Map<TestRailsEntity, String> columnValues = new HashMap<>();
 
@@ -25,4 +25,9 @@ public class RailRecord {
     public void setColumnValues(Map<TestRailsEntity, String> columnValues) {
         this.columnValues = columnValues;
     }
+
+    protected Object clone() throws CloneNotSupportedException {
+        return (RailRecord)super.clone();
+    }
+
 }

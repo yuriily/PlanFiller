@@ -1,3 +1,7 @@
+import com.codepine.api.testrail.model.Test;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import data.*;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -24,9 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class PlanFillerController {
     private Stage primaryStage;
@@ -38,6 +42,8 @@ public class PlanFillerController {
     public ListView<Plan> testPlanList;
     @FXML
     public Button testPlanAddButton;
+    @FXML
+    public Button testPlanEntryAddButton;
     @FXML
     public ListView<Suite> testSuiteList;
     @FXML
@@ -195,8 +201,8 @@ public class PlanFillerController {
             public void changed(ObservableValue<? extends Plan> observable, Plan oldValue, Plan newValue) {
                 if(null==newValue)
                     return;
-
                 openTableView(false);
+                RailModel.getInstance().setSelectedPlan(newValue.getId());
             }
         });
         testCaseList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Case>() {
@@ -204,8 +210,8 @@ public class PlanFillerController {
             public void changed(ObservableValue<? extends Case> observable, Case oldValue, Case newValue) {
                 if(null==newValue)
                     return;
-
                 openTableView(false);
+                RailModel.getInstance().setSelectedCase(newValue.getId());
             }
         });
         configurationItemsList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ConfigurationItem>() {
@@ -251,6 +257,25 @@ public class PlanFillerController {
             }
         });
 
+        testPlanEntryAddButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if(RailModel.getInstance().getSelectedPlan()==0) {
+                    System.out.println("Please select test plan first.");
+                    return;
+                }
+                if(railRecordSet!=null && railRecordSet.getRows().size()>0) {
+                    if(RailModel.getInstance().getSelectedCase()!=0) {
+                        System.out.println("Test case is selected. A structure like case X configuration X configuration will be used.");
+                        addTestPlanEntry(RailModel.getInstance().getSelectedPlan(), RailModel.getInstance().getSelectedCase());
+                    }
+                    addTestPlanEntry(RailModel.getInstance().getSelectedPlan());
+                }
+                else
+                    System.out.println("There is nothing to insert. Please create a data set first.");
+            }
+        });
+
 
     }
 
@@ -275,7 +300,7 @@ public class PlanFillerController {
     //refreshes the table according to current selection
     //the following combinations are possible:
     //test suite + configuration
-    //configuration + configuration (then, when you reimport such csv, you should be prompted to indicate test case or suite
+    //configuration + configuration (then, when you reimport such csv, you should indicate test case or suite
 
     public void refreshTable(ActionEvent event) {
         tableView.getItems().clear();
@@ -467,7 +492,7 @@ public class PlanFillerController {
 
     public void exportRecordSet() {
         //if there is no project selected, then there is no sense in exporting the data now - configurations won't be resolved
-        if(railModel.getSelectedProject()==0) {
+        if(railModel != null && railModel.getSelectedProject()==0) {
             System.out.println("Please select a project first, otherwise it won't be possible to work with configurations.");
             return;
         }
@@ -496,6 +521,11 @@ public class PlanFillerController {
                 e.printStackTrace();
             }
         }
+        //debug
+//        for(RailRecord record: railRecordSet.getRows()) {
+//            System.out.println(record.getRowValue()+ "contains map: ");
+//            System.out.println(record.getColumnValues().toString());
+//        }
 
     }
 
@@ -518,6 +548,129 @@ public class PlanFillerController {
             configurationItemsList.getSelectionModel().select(newIndex);
             configurationItemsList.refresh();
         }
+    }
+
+    //adding an entry to existing test plan
+    public void addTestPlanEntry(int planId) {
+        //FIRST CASE: we've got cases in rows and configurations in columns
+        PlanEntry planEntry = new PlanEntry();
+        //todo request for plan entry name
+        planEntry.setName("Common tests");
+
+        //todo add a check: if railRecordSet contains all the tests from suite, then true; otherwise false
+        //maybe we shouldn't check it at all? it can be always set to false
+        planEntry.setIncludeAll(false);
+
+        //get a suite id from the first test case - we assume that all cases belong to one suite
+        int currentSuiteId = ((Case)railRecordSet.getRows().get(0).getRowValue()).getSuiteId();
+        planEntry.setSuiteId(currentSuiteId);
+
+        //get all possible configurations
+        //check for uniqueness first - are there any duplicates
+        HashSet<TestRailsEntity> configSet = new HashSet<>(railRecordSet.getColumnNames());
+        if(configSet.size()!=railRecordSet.getColumnNames().size()) {
+            System.out.println("ERROR: there are duplicates in table columns. Plan entry is not added.");
+            return;
+        }
+
+        //make a deep copy of all table rows
+        List<RailRecord> localRecords = new ArrayList<>(railRecordSet.getRows().size());
+        for(RailRecord railRecord:railRecordSet.getRows()) {
+            try {
+                localRecords.add((RailRecord) railRecord.clone());
+            } catch (CloneNotSupportedException e) { e.printStackTrace(); }
+        }
+
+        //iterate through all configurations;
+        //test run can have only one configuration from configuration group
+        List<Run> testRuns = new ArrayList<>();
+        List<Integer> includedConfigIds = new ArrayList<>();
+        Set<Integer> originalCaseIds = new HashSet<>();
+        for(TestRailsEntity currentConfig : railRecordSet.getColumnNames()) {
+
+            List<Integer> includedCaseIds = new ArrayList<>();
+            //for each configuration iterate through the remaining list of cases
+            Iterator<RailRecord> recordIterator = localRecords.iterator();
+            while(recordIterator.hasNext()) {
+                RailRecord record = (RailRecord) recordIterator.next();
+
+                //if case has a value for this configuration, add it
+                if(record.getColumnValues().containsKey(currentConfig)) {
+                    includedCaseIds.add(record.getRowValue().getId());
+                    originalCaseIds.add(record.getRowValue().getId());
+                    //then delete this value from map
+                    record.getColumnValues().remove(currentConfig);
+                    //check if the map is empty, if yes - remove the case from the local copy of test cases
+                    if(record.getColumnValues().isEmpty())
+                        recordIterator.remove();
+
+                }
+            }
+
+            //are there any cases that match current configuration?
+            if(includedCaseIds.isEmpty())
+                continue;
+
+            Run run = new Run();
+            run.setIncludeAll(false);
+            run.setSuiteId(currentSuiteId);
+            run.setName("Configuration: "+currentConfig.getName());
+            run.setDescription("Test run for configuration: "+currentConfig.getName());
+            run.setConfigId(currentConfig.getId());
+            run.setCaseIds((ArrayList<Integer>) includedCaseIds);
+            includedConfigIds.add(currentConfig.getId());
+            testRuns.add(run);
+        }
+
+//        //NOT NEEDED NOW: each test run contains one test case and a list of conifgurations from one config. group
+//        //iterate through all the rows of the table, there will be one test run per row
+//        //i.e. one test case means one run with many configurations
+//        List<Run> testRuns = new ArrayList<>();
+//        Set<Integer> includedCaseIds = new HashSet<>();
+//        Set<Integer> includedConfigIds = new HashSet<>();
+//        for(RailRecord record : railRecordSet.getRows()) {
+//            //check if the row in the table has at least one value
+//            if(record.getColumnValues()!=null && !record.getColumnValues().isEmpty()) {
+//                includedCaseIds.add(record.getRowValue().getId());
+//                Run run = new Run();
+//                run.setIncludeAll(false);
+//                run.setSuiteId(currentSuiteId);
+//                run.setName("Run for case: " + record.getRowValue().getName());
+//                run.setDescription("Run for case: " + record.getRowValue().getName());
+//                run.setCaseId(record.getRowValue().getId());
+//                //get all configuration ids that are present in the map
+//                run.setConfigIds((ArrayList<Integer>)record.getColumnValues().keySet().stream().map(TestRailsEntity::getId).collect(Collectors.toList()));
+//                includedConfigIds.addAll(run.getConfigIds());
+//                testRuns.add(run);
+//
+//            }
+//        }
+
+        planEntry.setRuns(testRuns);
+        planEntry.setCaseIds(new ArrayList<>(originalCaseIds));
+        planEntry.setConfigIds(includedConfigIds);
+
+        //todo set assignee as current user
+        //planEntry.setAssignedToId(17);
+        planEntry.setAssignedToId(0);
+
+        //todo transfer this to railclient
+        ObjectMapper mapper = new ObjectMapper()
+                .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES)
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        Map<String,Object> mapToPost = mapper.convertValue(planEntry, Map.class);
+        try {
+            System.out.println(RailClient.getInstance().tempPostPlan(planId, mapToPost));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addTestPlanEntry(int projectId, int caseId) {
+        //todo check if something is similar with previous scheme
+        //SECOND CASE: we've got configurations both in columns and rows and one test case currently selected
+        PlanEntry planEntry = new PlanEntry();
+
     }
 
 

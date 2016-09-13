@@ -86,12 +86,20 @@ public class CsvImporter {
             String[] entities = header[0].split(" \\\\ ");
             final CellProcessor[] processors = new CellProcessor[header.length];
             Map<String, Object> oneRowRecord;
+            oneRowRecord = mapReader.read(header,processors);
 
-            //we've got cases in the rows, configurations in the columns
+            //put items from current project, from ALL configurations into one map - it will be easier to work with them
+            Map<Integer, ConfigurationItem> allConfigItems=new HashMap<>();
+            for(Configuration config : railModel.getCurrentConfigurations()) {
+                for(ConfigurationItem configItem: config.getConfigurationItems()) {
+                    allConfigItems.put(configItem.getId(), configItem);
+                }
+            }
+
             if(entities[0].equals("Case") && entities[1].equals("ConfigurationItem")) {
+                //we've got cases in the rows, configurations in the columns
 
                 //read first record and check if this test suite belongs to current project
-                oneRowRecord = mapReader.read(header,processors);
                 int firstCaseId = Integer.parseInt(oneRowRecord.get(header[0]).toString().substring(0,6).trim());
 
                 try {
@@ -103,17 +111,10 @@ public class CsvImporter {
                     System.out.println("An error during retrieving test case number: "+firstCaseId);
                     e.printStackTrace();
                 }
+
                 //now we've got a suite and can search for cases inside it
 
-                //first of all, put items from all project configurations into one map - it will be easier to work with them
-                Map<Integer, ConfigurationItem> allConfigItems=new HashMap<>();
-                for(Configuration config : railModel.getCurrentConfigurations()) {
-                    for(ConfigurationItem configItem: config.getConfigurationItems()) {
-                        allConfigItems.put(configItem.getId(), configItem);
-                    }
-                }
-
-                //configuration is already in the project, let's create a list of column names for record set
+                //create a list of column names for record set
                 for(int iter=1; iter<header.length;iter++) {
                     int configItemId = Integer.parseInt(header[iter].substring(0,6).trim());
                     recordSet.addColumnName(allConfigItems.get(configItemId));
@@ -141,6 +142,44 @@ public class CsvImporter {
                         e.printStackTrace();
                     }
                 }
+
+            }
+            if(entities[0].equals("ConfigurationItem") && entities[1].equals("ConfigurationItem")) {
+                //we've got config X config table
+                //it is too expensive to check if all configuration items are available now
+                //we will skip some test creation if we won't find some
+
+                //create a list of column names for record set
+                for(int iter=1; iter<header.length;iter++) {
+                    int configItemId = Integer.parseInt(header[iter].substring(0,6).trim());
+                    recordSet.addColumnName(allConfigItems.get(configItemId));
+                }
+
+                //now read the file record by record and add corresponding values to the record
+                while ((oneRowRecord = mapReader.read(header, processors)) != null) {
+                    RailRecord railRecord = new RailRecord();
+                    int rowRecordId = Integer.parseInt(oneRowRecord.get(header[0]).toString().substring(0,6).trim());
+                    try {
+                        //get a configItem from the merged list of both configs, that we've created earlier
+                        railRecord.setRowValue(allConfigItems.get(rowRecordId));
+                        //leave only the values that should be mapped, without row name
+                        oneRowRecord.remove(header[0]);
+                        for(Map.Entry<String,Object> entry : oneRowRecord.entrySet()) {
+                            //values should be replaced by strings, and not placed at all if they are null
+                            if(entry.getValue()!=null) {
+                                //keys should be replaced by configuration items
+                                ConfigurationItem configItem = allConfigItems.get(Integer.parseInt(entry.getKey().substring(0,6).trim()));
+                                railRecord.getColumnValues().put(configItem, entry.getValue().toString());
+                            }
+                        }
+                        recordSet.addRow(railRecord);
+                    } catch (Exception e) {
+                        System.out.println("An error during retrieving configuration with parameter id: " + rowRecordId);
+                        e.printStackTrace();
+                    }
+                }
+
+
 
             }
 
