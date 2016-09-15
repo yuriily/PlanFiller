@@ -50,6 +50,8 @@ public class PlanFillerController {
     @FXML
     public ListView configurationList;
     @FXML
+    public Button configurationCopyButton;
+    @FXML
     public Button configurationAddButton;
     @FXML
     public Button configurationFillFromFileButton;
@@ -254,6 +256,16 @@ public class PlanFillerController {
             }
         });
 
+        configurationCopyButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (railModel.getSelectedConfigurations().length == 1)
+                    copyConfiguration();
+                else
+                    System.out.println("Please select only one configuration to copy.");
+            }}
+        );
+
         testPlanEntryAddButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -374,13 +386,6 @@ public class PlanFillerController {
 
         tableView.setItems(FXCollections.observableList(recordSet.getRows()));
         tableView.setEditable(true);
-        //doesn't work for now, but should be implemented some day
-        //otherwise double clicking the item will erase the text
-//        Callback<TableColumn, TableCell> cellCallback = new Callback<TableColumn, TableCell>() {
-//          public TableCell call(TableColumn col) {
-//              return new models.EditingCell();
-//          }
-//        };
 
         //add table columns
         //first column goes for header row, class name is in the header: "row \ column"
@@ -597,10 +602,33 @@ public class PlanFillerController {
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL);
         Map<String,Object> mapToPost = mapper.convertValue(planEntry, Map.class);
         try {
+            System.out.println("Trying to insert an entry to plan with id: "+planId);
             System.out.println(RailClient.getInstance().tempPostPlan(planId, mapToPost));
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    //copies the selected configuration with all its items to the new project
+    public void copyConfiguration() {
+        try {
+            ChoiceDialog<Project> dialog = new ChoiceDialog<>(railModel.getCurrentProjects().get(0), railModel.getCurrentProjects());
+        dialog.setTitle("Select a project");
+        dialog.setHeaderText("Select a receiving project");
+        dialog.setContentText("Project:");
+        Optional<Project> result = dialog.showAndWait();
+        if(result.isPresent()) {
+            System.out.println("Starting to copy configuration to project: " + result.get().toString());
+            RailClient.getInstance().addConfiguration(result.get().getId(),
+                    railModel.getCurrentConfigurations().get(
+                            railModel.getCurrentConfigurations().indexOf(
+                                    configurationList.getSelectionModel().getSelectedItem())));
+
+        }
+        } catch (Exception e ) {
+            e.printStackTrace();
+        }
+
     }
 
 

@@ -48,6 +48,7 @@
                                 <Label text="Configuration"/>
                                 <ListView fx:id="configurationList" maxWidth="Infinity" prefHeight="1000.0">
                                 </ListView>
+                                <Button fx:id="configurationCopyButton" maxWidth="Infinity" text="Copy to project..."/>
                                 <Button fx:id="configurationAddButton" maxWidth="Infinity" text="Add configuration"/>
                                 <Button fx:id="configurationFillFromFileButton" maxWidth="Infinity"
                                         text="Fill from file..."/>

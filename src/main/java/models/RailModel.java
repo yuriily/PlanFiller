@@ -125,14 +125,17 @@ public class RailModel {
             //only one item is selected so we can update the configuration list
             int configId = selectedConfigurations[0];
 
-            //update the project if it's old; no need to update configuration separately as they all are received by one request
+            //update the project if it's old; no need to update configurations separately as they all are received by one request
             if(System.currentTimeMillis() - entityTime.get(this.getSelectedProject()) > TIMEOUT_TIME)
-                this.setSelectedProject(this.getSelectedProject());
+                this.selectedProject=this.getSelectedProject();
 
             List<ConfigurationItem> tempList;
             //find a configuration object by its id and extract all its items
             Predicate<Configuration> predicate = c -> c.getId() == configId;
-            tempList = Arrays.asList(((Configuration) this.getCurrentConfigurations().stream().filter(predicate).findFirst().get()).getConfigs());
+            tempList = Arrays.asList(
+                    ((Configuration)
+                            this.getCurrentConfigurations().stream().filter(predicate).findFirst().get())
+                            .getConfigs());
             this.setCurrentConfigurationItems(FXCollections.observableArrayList(tempList));
             }
     }
@@ -164,7 +167,12 @@ public class RailModel {
         this.currentConfigurationItems = currentConfigurationItems;
     }
 
-    public ObservableList getCurrentProjects() {
+    public ObservableList getCurrentProjects() throws Exception {
+
+        if(currentProjects==null)
+           currentProjects = (ObservableList<Project>)
+                   FXCollections.observableArrayList(
+                           RailClient.getInstance().getAllInstances(null, Project.class));
         return currentProjects;
     }
 
@@ -197,6 +205,10 @@ public class RailModel {
     }
 
     public ObservableList<Configuration> getCurrentConfigurations() {
+//        if(currentConfigurations==null) {
+//            //need to update
+//        }
+
         return currentConfigurations;
     }
 

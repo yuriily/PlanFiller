@@ -160,9 +160,54 @@ public final class RailClient {
     //temporary method - just for presentation; should be changed to allow adding of different complex entities
     //test plans, plan entries
     public String tempPostPlan(int planId, Map<String,Object> postMap) throws Exception {
-        System.out.println(postMap.toString());
-        String result = client.sendPost("add_plan_entry/"+planId, postMap).toString();
-        return result;
+        return formatJsonToPrettyString(client.sendPost("add_plan_entry/"+planId, postMap).toString());
+    }
+
+    public void addConfiguration(int projectId, Configuration configuration) {
+        String result="";
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        //add new configuration; there can be multiple configs with the same name, so don't check for uniqueness
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("name", configuration.getName());
+        try {
+            result = client.sendPost("add_config_group/" + projectId, configMap).toString();
+            //any erroneous response will be handled by APIException, so only good ones will hit the next lines
+            Configuration newConfig = mapper.readValue(result, Configuration.class);
+            System.out.println("Successfully added new configuration: "+ newConfig.getName());
+            int newConfigId = newConfig.getId();
+            //now add all its items one by one, duplicates are accepted too
+            for(ConfigurationItem configItem : configuration.getConfigurationItems()) {
+                Map<String, Object> itemMap = new HashMap<>();
+                itemMap.put("name", configItem.getName());
+                itemMap.put("group_id", newConfigId);
+                result = client.sendPost("add_config/" + newConfigId, itemMap).toString();
+                ConfigurationItem newConfigItem = mapper.readValue(result, ConfigurationItem.class);
+                System.out.println("New item added: " + newConfigItem.getName());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public String formatJsonToPrettyString(String jsonString) {
+        if(!jsonString.contains("{"))
+            return jsonString;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        try {
+            Object json = mapper.readValue(jsonString, Object.class);
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "Failed to format json string :(";
     }
 
 }
