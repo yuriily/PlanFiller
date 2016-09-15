@@ -5,10 +5,10 @@ import java.util.ArrayList;
 public class Run {
 	private Integer assignedtoId;
 	private Integer blockedCount;
-	private ArrayList<Integer> caseIds;
+	private ArrayList<Integer> caseIds = new ArrayList<>();
 	private Long completedOn;
 	private String config;
-	private ArrayList<Integer> configIds;
+	private ArrayList<Integer> configIds = new ArrayList<>();
 	private Integer createdBy;
 	private Long createdOn;
 	private Integer customStatus1Count;
@@ -137,6 +137,13 @@ public class Run {
 		ArrayList<Integer> configIdsList = new ArrayList<>();
 		configIdsList.add(configIds);
 		this.configIds = configIdsList;
+	}
+	public void setBothConfigIds(int firstId, int secondId) {
+		//just to make double sure we don't spoil anything
+		this.configIds.clear();
+
+		this.configIds.add(firstId);
+		this.configIds.add(secondId);
 	}
 
 

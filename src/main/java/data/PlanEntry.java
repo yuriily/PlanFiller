@@ -1,7 +1,10 @@
 package data;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import models.*;
+
+import java.util.*;
 
 public class PlanEntry {
 	private int suiteId;
@@ -10,8 +13,14 @@ public class PlanEntry {
 	private Integer assignedtoId;
 	private boolean includeAll;
 	private List<Integer> configIds = new ArrayList<>();
-	private List<Run> runs = new ArrayList<>();
 	private List<Integer> caseIds = new ArrayList<>();
+	private List<Run> runs = new ArrayList<>();
+
+	@JsonIgnore
+	private Set<Integer> includedConfigIds = new HashSet<>();
+	@JsonIgnore
+	private Set<Integer> uniqueRowEntityIds = new HashSet<>();
+
 
 	public PlanEntry(int suiteId, String name, String description, int assignedToId, boolean includeAll,
 			ArrayList<Integer> configIds, ArrayList<Run> runs) {
@@ -85,12 +94,178 @@ public class PlanEntry {
 		this.runs = runs;
 	}
 
-
 	public List<Integer> getCaseIds() {
 		return caseIds;
 	}
 
 	public void setCaseIds(List<Integer> caseIds) {
 		this.caseIds = caseIds;
+	}
+
+	public void addRunsFromRecordset(RailRecordSet railRecordSet, RailModel railModel, boolean isCasesInRows) {
+		//make a deep copy of all table rows
+		List<RailRecord> localRecords = new ArrayList<>(railRecordSet.getRows().size());
+		for(RailRecord railRecord:railRecordSet.getRows()) {
+			try {
+				localRecords.add((RailRecord) railRecord.clone());
+			} catch (CloneNotSupportedException e) { e.printStackTrace(); }
+		}
+
+		//iterate through all configurations;
+		//test run can have only one configuration from configuration group
+		List<Run> testRuns = new ArrayList<>();
+		Set<Integer> includedConfigIds = new HashSet<>();
+		Set<Integer> uniqueRowEntityIds = new HashSet<>();
+
+		//FIRST CASE: case X config table
+		if(isCasesInRows) {
+			for (TestRailsEntity currentConfig : railRecordSet.getColumnNames()) {
+
+				List<Integer> includedRowEntityIds = new ArrayList<>();
+				//for each configuration iterate through the remaining list of table rows (either cases or other configurations)
+				Iterator<RailRecord> recordIterator = localRecords.iterator();
+				RailRecord record = null;
+
+				while (recordIterator.hasNext()) {
+					record = (RailRecord) recordIterator.next();
+
+					//if case has a value for this configuration, add it
+					if (record.getColumnValues().containsKey(currentConfig)) {
+						includedRowEntityIds.add(record.getRowValue().getId());
+						uniqueRowEntityIds.add(record.getRowValue().getId());
+						//then delete this value from map
+						record.getColumnValues().remove(currentConfig);
+						//check if the map is empty, if yes - remove the case from the local copy of test cases
+						if (record.getColumnValues().isEmpty())
+							recordIterator.remove();
+
+					}
+				}
+
+				//are there any rows that match current configuration?
+				if (includedRowEntityIds.isEmpty())
+					continue;
+
+				Run run = new Run();
+				run.setIncludeAll(false);
+				run.setSuiteId(this.suiteId);
+				run.setName("Configuration: " + currentConfig.getName());
+				run.setDescription("Test run for configuration: " + currentConfig.getName());
+				run.setConfigId(currentConfig.getId());
+				run.setCaseIds((ArrayList<Integer>) includedRowEntityIds);
+				includedConfigIds.add(currentConfig.getId());
+
+				testRuns.add(run);
+			}
+			this.runs = testRuns;
+			this.caseIds = new ArrayList<>(uniqueRowEntityIds);
+			this.configIds = new ArrayList<>(includedConfigIds);
+		} else {
+			//SECOND CASE: config X config table
+			for(TestRailsEntity currentconfigColumn: railRecordSet.getColumnNames()) {
+				Iterator<RailRecord> recordIterator = localRecords.iterator();
+				RailRecord record = null;
+				while(recordIterator.hasNext()) {
+					record=(RailRecord) recordIterator.next();
+					if(record.getColumnValues().containsKey(currentconfigColumn)) {
+						uniqueRowEntityIds.add(record.getRowValue().getId());
+
+						//todo now this will happen multiple times for each column; add a flag to make only one insertion per column
+						uniqueRowEntityIds.add(currentconfigColumn.getId());
+
+						//create new run, it will have only one test and two configs, one from row and column
+						Run run = new Run();
+						run.setIncludeAll(false);
+						run.setSuiteId(this.suiteId);
+						run.setBothConfigIds(currentconfigColumn.getId(), record.getRowValue().getId());
+						run.setCaseId(railModel.getSelectedCase());
+						testRuns.add(run);
+
+						//clean up the map and delete the record if it has no more values in the map
+						record.getColumnValues().remove(currentconfigColumn);
+						if(record.getColumnValues().isEmpty())
+							recordIterator.remove();
+
+					}
+				}
+
+			}
+			this.runs=testRuns;
+			//todo get rid of arraylist for one argument
+			this.caseIds = Collections.singletonList(railModel.getSelectedCase());
+//			this.caseIds = Arrays.asList(railModel.getSelectedCase());
+			this.configIds = new ArrayList<>(uniqueRowEntityIds);
+
+		}
+
+
+//		List<Run> testRuns = new ArrayList<>();
+//		Set<Integer> includedConfigIds = new HashSet<>();
+//		Set<Integer> uniqueRowEntityIds = new HashSet<>();
+//		for(TestRailsEntity currentConfig : railRecordSet.getColumnNames()) {
+//
+//			List<Integer> includedRowEntityIds = new ArrayList<>();
+//			//for each configuration iterate through the remaining list of table rows (either cases or other configurations)
+//			Iterator<RailRecord> recordIterator = localRecords.iterator();
+//			RailRecord record = null;
+//
+//			while(recordIterator.hasNext()) {
+//				record = (RailRecord) recordIterator.next();
+//
+//				//if case has a value for this configuration, add it
+//				if(record.getColumnValues().containsKey(currentConfig)) {
+//					includedRowEntityIds.add(record.getRowValue().getId());
+//					uniqueRowEntityIds.add(record.getRowValue().getId());
+//					//then delete this value from map
+//					record.getColumnValues().remove(currentConfig);
+//					//check if the map is empty, if yes - remove the case from the local copy of test cases
+//					if(record.getColumnValues().isEmpty())
+//						recordIterator.remove();
+//
+//				}
+//			}
+//
+//			//are there any rows that match current configuration?
+//			if(includedRowEntityIds.isEmpty())
+//				continue;
+//
+//			Run run = new Run();
+//			run.setIncludeAll(false);
+//			run.setSuiteId(this.suiteId);
+//			run.setName("Configuration: "+currentConfig.getName());
+//			run.setDescription("Test run for configuration: "+currentConfig.getName());
+//			run.setConfigId(currentConfig.getId());
+//
+//			if(isCasesInRows) {
+//				//we've got a case X config table
+//				run.setCaseIds((ArrayList<Integer>) includedRowEntityIds);
+//				includedConfigIds.add(currentConfig.getId());
+//			}
+//			else {
+//				//we've got a config X config table, should use one test case only
+//				run.setCaseId(railModel.getSelectedCase());
+//
+//				List<Integer> bothConfigsList = includedRowEntityIds;
+//				bothConfigsList.add(currentConfig.getId());
+//				run.setConfigIds((ArrayList<Integer>)bothConfigsList);
+//				includedConfigIds.addAll(bothConfigsList);
+//			}
+//
+//			testRuns.add(run);
+//		}
+//		this.runs = testRuns;
+//
+//		if(isCasesInRows)
+//			this.caseIds = new ArrayList<>(uniqueRowEntityIds);
+//			//else some test case should be selected; in future - maybe more than one
+//		else {
+//			List<Integer> manuallySelectedCaseIds = new ArrayList<>();
+//			manuallySelectedCaseIds.add(railModel.getSelectedCase());
+//			this.caseIds = manuallySelectedCaseIds;
+//
+//		}
+//
+//		this.configIds=new ArrayList<Integer>(includedConfigIds);
+
 	}
 }

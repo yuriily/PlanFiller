@@ -19,7 +19,7 @@ public class TestRailsEntity {
             this.setName("(empty)");
         String result = ((Integer) this.getId()).toString();
         //add up to length of 6 digits;
-        // if there is more than 1 million records, please also change the number in CsvImporter.readFromCsv
+        // if there is more than 1 million records, please also change the number in models.CsvImporter.readFromCsv
         while(result.length()<6)
             result=" " + result;
         result+="| " + this.getName();
