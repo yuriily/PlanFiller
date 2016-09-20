@@ -57,11 +57,17 @@ public class PlanFiller extends Application {
         //trust all certificates to enable it working with corporate proxy
         trustEveryone();
 
-        //try to load config from file
-        if(loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH)) {
+        primaryStage.setScene(mainScene);
+        primaryStage.show();
 
-            //try to connect with existing credentials; skip if config is empty
-            if(RailClient.getInstance().connect()) {
+        //try to load config from file
+        while(!loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH)) {
+            System.out.println("Cannot load configuration file. Please add new configuration.");
+            planFillerController.optionsButton.fire();
+        }
+
+        //try to connect with existing credentials; skip if config is empty
+        if(RailClient.getInstance().connect()) {
                 //load data into model
                 //load only the list of projects - other lists will be filled when project will be selected from list
                 isConnectionFailed=false;
@@ -74,15 +80,6 @@ public class PlanFiller extends Application {
                 //cannot connect now; nothing to show
                 System.out.println("Cannot connect to TestRail. Check your Internet connection or TestRails parameters.");
             }
-
-        }
-        else {
-            System.out.println("Cannot load configuration file. Please add new configuration.");
-        }
-        primaryStage.setScene(mainScene);
-        primaryStage.show();
-        if(isConnectionFailed)
-            planFillerController.optionsButton.fire();
 
 
     }

@@ -273,10 +273,27 @@ public class PlanFillerController {
                     System.out.println("Please select test plan first.");
                     return;
                 }
-                if(railRecordSet!=null && railRecordSet.getRows().size()>0)
-                    addTestPlanEntry(RailModel.getInstance().getSelectedPlan());
+                if(railRecordSet!=null && railRecordSet.getRows().size()>0) {
+
+                    boolean isCasesInRows = railRecordSet.getRows().get(0).getRowValue().getClass().getSimpleName().equals("Case");
+
+                    if(!isCasesInRows && RailModel.getInstance().getSelectedCase()==0) {
+                            System.out.println("You've made a [configuration] * [configuration] table. Please also select a test case to proceed.");
+                            return;
+                    }
+
+                    addTestPlanEntry(RailModel.getInstance().getSelectedPlan(), isCasesInRows);
+                }
                 else
                     System.out.println("There is nothing to insert. Please create a data set first.");
+            }
+        });
+
+        //always scroll textarea to the bottom when new string is added
+        consoleArea.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                consoleArea.setScrollTop(Double.MAX_VALUE);
             }
         });
 
@@ -287,15 +304,14 @@ public class PlanFillerController {
     public void openOptionsPanel(ActionEvent event) {
         Stage stage = new Stage();
         stage.setTitle("Options");
-        FXMLLoader optionsLoader = new FXMLLoader(getClass().getResource("options.fxml"));
+        FXMLLoader optionsLoader = new FXMLLoader(getClass().getResource("/options.fxml"));
         try {
             Parent options = optionsLoader.load();
             Scene scene = new Scene(options);
             stage.setScene(scene);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(((Node)event.getSource()).getScene().getWindow());
-//            primaryStage.hide();
-            stage.show();
+            stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -548,18 +564,9 @@ public class PlanFillerController {
     }
 
     //adding an entry to existing test plan
-    public void addTestPlanEntry(int planId) {
+    public void addTestPlanEntry(int planId, boolean isCasesInRows) {
         //FIRST CASE: we've got cases in rows and configurations in columns = true
         //SECOND CASE: configuration X configuration
-        boolean isCasesInRows = railRecordSet.getRows().get(0).getRowValue().getClass().getSimpleName().equals("Case");
-
-        //todo move this check to the caller method
-        if(!isCasesInRows) {
-            if(railModel.getSelectedCase()==0) {
-                System.out.println("You've made a [configuration] * [configuration] table. Please also select a test case to proceed.");
-                return;
-            }
-        }
 
         PlanEntry planEntry = new PlanEntry();
 
@@ -582,21 +589,15 @@ public class PlanFillerController {
             return;
         }
 
-        //make a deep copy of all table rows
-        List<RailRecord> localRecords = new ArrayList<>(railRecordSet.getRows().size());
-        for(RailRecord railRecord:railRecordSet.getRows()) {
-            try {
-                localRecords.add((RailRecord) railRecord.clone());
-            } catch (CloneNotSupportedException e) { e.printStackTrace(); }
-        }
-
         //add all test runs to the entry
+        System.out.println("Adding test runs from recordset...");
         planEntry.addRunsFromRecordset(railRecordSet, railModel, isCasesInRows);
+        System.out.println("Successfully added " + planEntry.getRuns().size() + " runs.");
 
         //todo set assignee as current user
         planEntry.setAssignedToId(0);
 
-        //todo transfer this to railclient
+        //transfer this to railclient
         ObjectMapper mapper = new ObjectMapper()
                 .setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES)
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL);

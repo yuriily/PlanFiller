@@ -98,6 +98,11 @@ public class CsvImporter {
                 }
             }
 
+            //reset mapper iterator so it will start to process things from first record again
+            //re-read a header so it will point to first row
+            mapReader = new CsvMapReader(new FileReader(fileName), CsvPreference.STANDARD_PREFERENCE);
+            mapReader.getHeader(true);
+
             if(entities[0].equals("Case") && entities[1].equals("ConfigurationItem")) {
                 //we've got cases in the rows, configurations in the columns
 
@@ -122,7 +127,7 @@ public class CsvImporter {
                     recordSet.addColumnName(allConfigItems.get(configItemId));
                 }
 
-                //now read the file record by record and add corresponding values to the record
+                //read the file record by record and add corresponding values to the record
                 while ((oneRowRecord = mapReader.read(header, processors)) != null) {
                     RailRecord railRecord = new RailRecord();
                     int rowRecordId = Integer.parseInt(oneRowRecord.get(header[0]).toString().substring(0,6).trim());

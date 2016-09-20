@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Class-Path: jasypt-1.9.2.jar json-simple-1.1.jar super-csv-2.4.0.jar j
+ ackson-databind-2.4.6.jar jackson-core-2.4.6.jar jackson-annotations-
+ 2.4.0.jar
+Main-Class: models.PlanFiller
+

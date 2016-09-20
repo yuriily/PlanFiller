@@ -52,6 +52,7 @@ public class OptionsController {
                     closeOptionsButton.fire();
                 else {
                     //todo tell user something wrong has happened
+                    System.out.println("Something wrong has happened during saving the parameters. Please retry.");
                 }
             }
         });

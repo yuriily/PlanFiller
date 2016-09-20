@@ -4,12 +4,13 @@ version '1.0-SNAPSHOT'
 apply plugin: 'idea'
 apply plugin: 'java'
 
-sourceCompatibility = 1.5
+sourceCompatibility = 1.8
 
 repositories {
-//    mavenCentral()
-    jcenter()
-    maven { url 'https://mvnrepository.com/' }
+    mavenCentral()
+//    jcenter(url 'http://jcenter.bintray.com/')
+//    maven { url 'http://jcenter.bintray.com/' }
+    maven { url 'http://mvnrepository.com/' }
 
 }
 
@@ -26,11 +27,21 @@ dependencies {
     compile group: 'net.sf.supercsv', name: 'super-csv', version: '2.4.0'
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.+'
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.7'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.+'
 
+}
 
-
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': 'models.PlanFiller'
+        )
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }

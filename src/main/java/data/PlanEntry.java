@@ -103,6 +103,8 @@ public class PlanEntry {
 	}
 
 	public void addRunsFromRecordset(RailRecordSet railRecordSet, RailModel railModel, boolean isCasesInRows) {
+		//todo separate test runs into different entries
+
 		//make a deep copy of all table rows
 		List<RailRecord> localRecords = new ArrayList<>(railRecordSet.getRows().size());
 		for(RailRecord railRecord:railRecordSet.getRows()) {

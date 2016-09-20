@@ -59,7 +59,7 @@
                                 <Label text="Items in configuration"/>
                                 <ListView fx:id="configurationItemsList" prefHeight="1000.0" maxWidth="Infinity"/>
                                 <Button fx:id="itemAddButton" maxWidth="Infinity" text="Add item"/>
-                                <Button fx:id="itemRemoveButton" maxWidth="Infinity" text="Remove item"/>
+                                <Button fx:id="itemRemoveButton" maxWidth="Infinity" text="Remove item" disable="true"/>
                             </children>
                         </VBox>
                     </children>
