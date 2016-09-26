@@ -60,6 +60,8 @@ public class PlanFiller extends Application {
         primaryStage.setScene(mainScene);
         primaryStage.show();
 
+        //todo show some modal progress bar while long tasks are executed
+
         //try to load config from file
         while(!loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH)) {
             System.out.println("Cannot load configuration file. Please add new configuration.");

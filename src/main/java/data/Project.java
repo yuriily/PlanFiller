@@ -28,8 +28,6 @@ public class Project extends TestRailsEntity {
 			String url, String announcement) {
 		super();
 		
-		//TODO: add check for not null for the fields: id, name, url
-		
 		this.suiteMode = suiteMode;
 		this.completedOn = completedOn;
 		super.setName(name);

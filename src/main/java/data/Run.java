@@ -70,7 +70,6 @@ public class Run {
 		this.url = url;
 	}
 	public Run() {
-		// TODO Auto-generated constructor stub
 	}
 	public String getConfig() {
 		return config;

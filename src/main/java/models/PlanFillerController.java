@@ -127,7 +127,7 @@ public class PlanFillerController {
                 railModel = RailModel.getInstance();
                 try {
                 railModel.setSelectedProject(newValue.getId());
-                    //todo bind these things with properties
+                    //todo bind these things with properties some day
                 railModel.setSelectedSuite(0);
                 railModel.setSelectedPlan(0);
 
@@ -153,7 +153,6 @@ public class PlanFillerController {
                 railModel = RailModel.getInstance();
                 try {
                 railModel.setSelectedSuite(newValue.getId());
-                    //todo bind properties to listen to selection changes for every list except for config (it will have multi selection)
                     if(railModel.getCurrentCases() != null && railModel.getCurrentCases().size()>0)
                         testCaseList.setItems(railModel.getCurrentCases());
 
@@ -266,36 +265,28 @@ public class PlanFillerController {
             }}
         );
 
-        testPlanEntryAddButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                if(RailModel.getInstance().getSelectedPlan()==0) {
-                    System.out.println("Please select test plan first.");
-                    return;
-                }
-                if(railRecordSet!=null && railRecordSet.getRows().size()>0) {
-
-                    boolean isCasesInRows = railRecordSet.getRows().get(0).getRowValue().getClass().getSimpleName().equals("Case");
-
-                    if(!isCasesInRows && RailModel.getInstance().getSelectedCase()==0) {
-                            System.out.println("You've made a [configuration] * [configuration] table. Please also select a test case to proceed.");
-                            return;
-                    }
-
-                    addTestPlanEntry(RailModel.getInstance().getSelectedPlan(), isCasesInRows);
-                }
-                else
-                    System.out.println("There is nothing to insert. Please create a data set first.");
+        testPlanEntryAddButton.setOnAction(event -> {
+            if(RailModel.getInstance().getSelectedPlan()==0) {
+                System.out.println("Please select test plan first.");
+                return;
             }
+            if(railRecordSet!=null && railRecordSet.getRows().size()>0) {
+
+                boolean isCasesInRows = railRecordSet.getRows().get(0).getRowValue().getClass().getSimpleName().equals("Case");
+
+                if(!isCasesInRows && RailModel.getInstance().getSelectedCase()==0) {
+                        System.out.println("You've made a [configuration] * [configuration] table. Please also select a test case to proceed.");
+                        return;
+                }
+
+                addTestPlanEntry(RailModel.getInstance().getSelectedPlan(), isCasesInRows);
+            }
+            else
+                System.out.println("There is nothing to insert. Please create a data set first.");
         });
 
         //always scroll textarea to the bottom when new string is added
-        consoleArea.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                consoleArea.setScrollTop(Double.MAX_VALUE);
-            }
-        });
+        consoleArea.textProperty().addListener((observable, oldValue, newValue) -> consoleArea.setScrollTop(Double.MAX_VALUE));
 
 
     }
@@ -323,12 +314,18 @@ public class PlanFillerController {
     //configuration + configuration (then, when you reimport such csv, you should indicate test case or suite
 
     public void refreshTable(ActionEvent event) {
+        //need a confirmation - the table will be rebuilt and all the data lost
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Rebuild the table? All data will be lost.", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait();
+        if(alert.getResult() == ButtonType.NO)
+            return;
+
         tableView.getItems().clear();
         tableView.getColumns().clear();
         tableView.setPlaceholder(new Label("Loading data..."));
 
         railModel=RailModel.getInstance();
-        //todo ask for a confirmation - the table will be rebuilt and all the data lost
+
         //reset current recordset, we don't need it anymore
         railRecordSet = new RailRecordSet();
 
@@ -511,8 +508,13 @@ public class PlanFillerController {
         }
 
         if(railRecordSet!=null) {
-            //todo alert the user that current table will be erased
+            //confirm that current table will be erased
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Rebuild the table? All data will be lost.", ButtonType.YES, ButtonType.NO);
+            alert.showAndWait();
+            if(alert.getResult() == ButtonType.NO)
+                return;
         }
+
         //Important! Empty the recordset so there is nothing left from previous table
         railRecordSet = new RailRecordSet();
 
@@ -570,8 +572,15 @@ public class PlanFillerController {
 
         PlanEntry planEntry = new PlanEntry();
 
-        //todo request user for plan entry name
-        planEntry.setName("Common tests");
+        TextInputDialog entryNameDialog = new TextInputDialog("Common tests");
+        entryNameDialog.setContentText("Please name a plan entry:");
+        entryNameDialog.setHeaderText("Plan entry name");
+        Optional<String> result = entryNameDialog.showAndWait();
+        if(result.isPresent())
+            planEntry.setName(result.get());
+        else
+            planEntry.setName("Common tests");
+
         planEntry.setIncludeAll(false);
 
         //get a suite id from the first test case - we assume that all cases belong to one suite
