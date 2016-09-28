@@ -236,16 +236,14 @@ public class PlanFillerController {
             public void handle(ActionEvent event) { refreshTable(event); }
         });
 
-        //todo I've messed up with imports and exports naming, should change all import to export and vice versa
-
         importPlanButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
-            public void handle(ActionEvent event) { exportRecordSet();  }
+            public void handle(ActionEvent event) { importRecordSet();  }
         });
 
         exportPlanButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
-            public void handle(ActionEvent event) { importRecordSet();   }
+            public void handle(ActionEvent event) { exportRecordSet();   }
         });
 
         itemRemoveButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -315,10 +313,14 @@ public class PlanFillerController {
 
     public void refreshTable(ActionEvent event) {
         //need a confirmation - the table will be rebuilt and all the data lost
+        if(railRecordSet!=null) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Rebuild the table? All data will be lost.", ButtonType.YES, ButtonType.NO);
+        alert.setHeaderText("New data for the table");
         alert.showAndWait();
-        if(alert.getResult() == ButtonType.NO)
+        if(alert.getResult() != ButtonType.YES)
             return;
+        }
+
 
         tableView.getItems().clear();
         tableView.getColumns().clear();
@@ -476,7 +478,7 @@ public class PlanFillerController {
         }
     }
 
-    public void importRecordSet() {
+    public void exportRecordSet() {
         if(railRecordSet==null) {
             System.out.println("ERROR: there is nothing to export.");
             return;
@@ -500,8 +502,8 @@ public class PlanFillerController {
 
     }
 
-    public void exportRecordSet() {
-        //if there is no project selected, then there is no sense in exporting the data now - configurations won't be resolved
+    public void importRecordSet() {
+        //if there is no project selected, then there is no sense in importing the data now - configurations won't be resolved
         if(railModel != null && railModel.getSelectedProject()==0) {
             System.out.println("Please select a project first, otherwise it won't be possible to work with configurations.");
             return;
@@ -511,7 +513,7 @@ public class PlanFillerController {
             //confirm that current table will be erased
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Rebuild the table? All data will be lost.", ButtonType.YES, ButtonType.NO);
             alert.showAndWait();
-            if(alert.getResult() == ButtonType.NO)
+            if(alert.getResult() != ButtonType.YES)
                 return;
         }
 
@@ -569,7 +571,6 @@ public class PlanFillerController {
     public void addTestPlanEntry(int planId, boolean isCasesInRows) {
         //FIRST CASE: we've got cases in rows and configurations in columns = true
         //SECOND CASE: configuration X configuration
-
         PlanEntry planEntry = new PlanEntry();
 
         TextInputDialog entryNameDialog = new TextInputDialog("Common tests");
@@ -614,6 +615,7 @@ public class PlanFillerController {
         try {
             System.out.println("Trying to insert an entry to plan with id: "+planId);
             System.out.println(RailClient.getInstance().tempPostPlan(planId, mapToPost));
+
         } catch (Exception e) {
             e.printStackTrace();
         }

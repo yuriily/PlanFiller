@@ -72,8 +72,8 @@ public final class RailClient {
         prefixes.put(Project.class, "get_projects");
         prefixes.put(Plan.class, "get_plans/"+parameterId[0]);
         prefixes.put(Suite.class, "get_suites/"+parameterId[0]);
-        prefixes.put(Configuration.class, "get_configs/"+parameterId[0]);
         //[0] = projectId, [1] = suiteId, [2]=sectionId; [2] is not used now
+        prefixes.put(Configuration.class, "get_configs/"+parameterId[0]);
         if(parameterId.length>1)
             prefixes.put(Case.class, "get_cases/"+parameterId[0]+"&suite_id="+parameterId[1]);
 
@@ -109,9 +109,9 @@ public final class RailClient {
         prefixes.put(Project.class, "get_project/"+parameterId);
         prefixes.put(Plan.class, "get_plan/"+parameterId);
         prefixes.put(Suite.class, "get_suite/"+parameterId);
-        //todo check if we need to get one configuration only
-        //prefixes.put(Configuration.class, "get_config/"+parameterId[0]);
+        //it is not possible now to retrieve one configuration only
         //[0] = projectId, [1] = suiteId, [2]=sectionId; [2] is not used now
+        //prefixes.put(Configuration.class, "get_config/"+parameterId[0]);
         prefixes.put(Case.class, "get_case/"+parameterId);
 
         String prefix = prefixes.get(inst.getClass());
@@ -144,11 +144,7 @@ public final class RailClient {
             if(results.equals("{}"))
                 System.out.println("Deleted successfully.");
             else {
-                //todo print out some error
-                //todo create a map with error codes
-                //400 - invalid/unknown config
-                //403 - no permissions
-                //404 - no access
+                System.out.println(parseErrorMessage(results));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -162,21 +158,32 @@ public final class RailClient {
     //temporary method - just for presentation; should be changed to allow adding of different complex entities
     //test plans, plan entries
     public String tempPostPlan(int planId, Map<String,Object> postMap) throws Exception {
-        //todo this is a continuous task, so disable all UI before starting
 
-        Task task = new Task<Void>() {
+        //this is a continuous task, so disable all UI before starting
+        //show some progress
+
+        ProgressForm progressForm = new ProgressForm();
+        progressForm.setLabelText("Posting plan entries to TestRail");
+
+        Task<String> task = new Task<String>() {
           @Override
-            public Void call() throws Exception {
+            public String call() throws Exception {
                 String tooLargeString = formatJsonToPrettyString(client.sendPost("add_plan_entry/"+planId, postMap).toString());
-                    System.out.println(tooLargeString);
-              return null;
+              return tooLargeString;
           }
         };
+
+        progressForm.activateProgressBar(task);
+
+        task.setOnSucceeded(e-> {
+            System.out.println(task.getValue());
+            progressForm.getDialogStage().close();
+        });
+
         Thread thread = new Thread(task);
         thread.setDaemon(true);
+        progressForm.getDialogStage().show();
         thread.start();
-        //todo disable interactions with UI somehow but update the textarea
-        //thread.join();
 
         return "Updating plan has started. Please wait until results are shown here. \n " +
                 "It can take about 5 minutes for 200 entry values";
@@ -251,6 +258,16 @@ public final class RailClient {
             e.printStackTrace();
         }
         return "Failed to format json string :(";
+    }
+
+    public String parseErrorMessage(String resultFromRail) {
+        String result="Unknown error occurred.";
+        if(resultFromRail.contains("400") || resultFromRail.contains("404"))
+            result = "Invalid or unknown instance was requested.";
+        if(resultFromRail.contains("403"))
+            result = "Restricted access to instance";
+
+        return result;
     }
 
 }
