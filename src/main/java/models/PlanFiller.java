@@ -52,8 +52,6 @@ public class PlanFiller extends Application {
         optionsScene = new Scene(options,600,600);
         optionsScene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 
-        boolean isConnectionFailed = true;
-
         //trust all certificates to enable it working with corporate proxy
         trustEveryone();
 
@@ -63,20 +61,19 @@ public class PlanFiller extends Application {
         //todo show some modal progress bar while long tasks are executed
 
         //try to load config from file
-        while(!loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH)) {
+        if(!loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH)) {
             System.out.println("Cannot load configuration file. Please add new configuration.");
             planFillerController.optionsButton.fire();
+            loadOptions(OptionsValues.getInstance().OPTIONS_FILE_PATH);
         }
 
         //try to connect with existing credentials; skip if config is empty
         if(RailClient.getInstance().connect()) {
                 //load data into model
                 //load only the list of projects - other lists will be filled when project will be selected from list
-                isConnectionFailed=false;
                 System.out.println("Filling project list...");
                 planFillerController.testProjectList.setItems((ObservableList<Project>)
                         FXCollections.observableArrayList(RailClient.getInstance().getAllInstances(null, Project.class)));
-
 
             } else {
                 //cannot connect now; nothing to show

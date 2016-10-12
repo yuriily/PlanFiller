@@ -108,8 +108,10 @@ public class PlanEntry {
 		List<RailRecord> localRecords = new ArrayList<>(railRecordSet.getRows().size());
 		for(RailRecord railRecord:railRecordSet.getRows()) {
 			try {
-				localRecords.add((RailRecord) railRecord.clone());
-			} catch (CloneNotSupportedException e) { e.printStackTrace(); }
+				//todo cannot use deepClone - it creates new instances of configurationItem objects so I cannot search for them whilke making
+				//or change object comparison in search to .toString comparison, then first map key should be ConfigurationItem.toString
+				localRecords.add((RailRecord)railRecord.clone());
+			} catch (Exception e) { e.printStackTrace(); }
 		}
 
 		//iterate through all configurations;

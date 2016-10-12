@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -100,7 +101,6 @@ public class PlanFillerController {
         //add something that was not configured in fxml
         configurationList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-
         //redirect all system data to textarea
         Console console = new Console();
         PrintStream printStream = new PrintStream(console,true);
@@ -117,26 +117,8 @@ public class PlanFillerController {
             public void changed(ObservableValue<? extends Project> observable, Project oldValue, Project newValue) {
                 if(null==newValue)
                     return;
+                updateProjectList(newValue);
 
-                openTableView(false);
-                testPlanList.getItems().clear();
-                testSuiteList.getItems().clear();
-                testCaseList.getItems().clear();
-                configurationList.getItems().clear();
-                configurationItemsList.getItems().clear();
-                railModel = RailModel.getInstance();
-                try {
-                railModel.setSelectedProject(newValue.getId());
-                    //todo bind these things with properties some day
-                railModel.setSelectedSuite(0);
-                railModel.setSelectedPlan(0);
-
-                    testPlanList.setItems(railModel.getCurrentPlans());
-                    testSuiteList.setItems(railModel.getCurrentSuites());
-                    configurationList.setItems(railModel.getCurrentConfigurations());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         });
 
@@ -265,7 +247,7 @@ public class PlanFillerController {
 
         testPlanEntryAddButton.setOnAction(event -> {
             if(RailModel.getInstance().getSelectedPlan()==0) {
-                System.out.println("Please select test plan first.");
+                System.out.println("Please select a test plan first.");
                 return;
             }
             if(railRecordSet!=null && railRecordSet.getRows().size()>0) {
@@ -281,6 +263,27 @@ public class PlanFillerController {
             }
             else
                 System.out.println("There is nothing to insert. Please create a data set first.");
+        });
+
+        testPlanAddButton.setOnAction(event -> {
+            if(RailModel.getInstance().getSelectedProject()==0) {
+                System.out.println("Please select a project first.");
+                return;
+            }
+            TextInputDialog entryNameDialog = new TextInputDialog("New test plan");
+            entryNameDialog.setContentText("Please name a plan:");
+            entryNameDialog.setHeaderText("Test plan name");
+            Optional<String> result = entryNameDialog.showAndWait();
+            if(result.isPresent()) {
+                Map<String, Object> planMap = new HashMap<>();
+                planMap.put("name", result.get());
+                RailClient.getInstance().createOneInstance(planMap, Plan.class,RailModel.getInstance().getSelectedProject());
+                //todo refresh the list of plans correctly, not by selecting/deselecting one
+                RailModel.getInstance().resetCache();
+                int oldProject=testProjectList.getSelectionModel().getSelectedIndex();
+                testProjectList.getSelectionModel().select(null);
+                testProjectList.getSelectionModel().select(oldProject);
+            }
         });
 
         //always scroll textarea to the bottom when new string is added
@@ -379,12 +382,6 @@ public class PlanFillerController {
         //there is some data for at least one row and column
         if(railRecordSet.getRows()!=null && railRecordSet.getColumnNames()!=null) {
             //todo run this in separate thread
-//            Platform.runLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    refreshTableFromRecordSet(railRecordSet);
-//                }
-//            });
             refreshTableFromRecordSet(railRecordSet);
             openTableView(true);
 
@@ -394,6 +391,11 @@ public class PlanFillerController {
     }
 
     public void refreshTableFromRecordSet(RailRecordSet recordSet) {
+        if(recordSet == null || recordSet.getRows() == null || recordSet.getColumnNames() == null) {
+            System.out.println("There are no records in the recordset. Canceling.");
+            return;
+        }
+
         tableView.getItems().clear();
         tableView.getColumns().clear();
         //the table will contain the list of models.RailRecord objects
@@ -491,9 +493,9 @@ public class PlanFillerController {
         if(file != null) {
             try {
                 //create csv and save it
-                CsvImporter importer = new CsvImporter(railRecordSet);
-                importer.writeToCSV(file.getAbsolutePath());
-                System.out.println("Map saved to file: "+file.getAbsolutePath());
+                        CsvImporter importer = new CsvImporter(railRecordSet);
+                        importer.writeToCSV(file.getAbsolutePath());
+                        System.out.println("Map saved to file: "+file.getAbsolutePath());
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -504,16 +506,16 @@ public class PlanFillerController {
 
     public void importRecordSet() {
         //if there is no project selected, then there is no sense in importing the data now - configurations won't be resolved
-        if(railModel != null && railModel.getSelectedProject()==0) {
+        if (railModel == null || railModel.getSelectedProject() == 0) {
             System.out.println("Please select a project first, otherwise it won't be possible to work with configurations.");
             return;
         }
 
-        if(railRecordSet!=null) {
+        if (railRecordSet != null) {
             //confirm that current table will be erased
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Rebuild the table? All data will be lost.", ButtonType.YES, ButtonType.NO);
             alert.showAndWait();
-            if(alert.getResult() != ButtonType.YES)
+            if (alert.getResult() != ButtonType.YES)
                 return;
         }
 
@@ -525,24 +527,40 @@ public class PlanFillerController {
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
         File file = fileChooser.showOpenDialog(primaryStage);
-        if(file!=null) {
-            try {
+        if (file != null) {
                 //pass our empty recordset there
-                CsvImporter importer = new CsvImporter(railRecordSet, railModel);
-                importer.readFromCSV(file.getAbsolutePath());
+                ProgressForm pForm = new ProgressForm();
+                pForm.setLabelText("Reading test plan from csv");
 
-                //update the table view
-                refreshTableFromRecordSet(railRecordSet);
-                openTableView(true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                Task<Boolean> task = new Task<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        CsvImporter importer = new CsvImporter(railRecordSet, railModel);
+                        return importer.readFromCSV(file.getAbsolutePath());
+                    }
+                };
+
+                pForm.activateProgressBar(task);
+
+                task.setOnSucceeded(e -> {
+                    pForm.getDialogStage().close();
+                    //update the table view only if there was no big errors during map retrieval
+                    if(task.getValue()) {
+                        refreshTableFromRecordSet(railRecordSet);
+                        openTableView(true);
+                    }
+                });
+            task.setOnFailed(e-> {
+                System.out.println("Importing from csv was interrupted unexpectedly.");
+                pForm.getDialogStage().close();
+            });
+
+                Thread thread = new Thread(task);
+                thread.setDaemon(true);
+                pForm.getDialogStage().show();
+                thread.start();
+
         }
-        //debug
-//        for(models.RailRecord record: railRecordSet.getRows()) {
-//            System.out.println(record.getRowValue()+ "contains map: ");
-//            System.out.println(record.getColumnValues().toString());
-//        }
 
     }
 
@@ -643,5 +661,27 @@ public class PlanFillerController {
 
     }
 
+    private void updateProjectList(Project newValue) {
+        openTableView(false);
+        testPlanList.getItems().clear();
+        testSuiteList.getItems().clear();
+        testCaseList.getItems().clear();
+        configurationList.getItems().clear();
+        configurationItemsList.getItems().clear();
+        railModel = RailModel.getInstance();
+        try {
+            railModel.setSelectedProject(newValue.getId());
+            //todo bind these things with properties some day
+            railModel.setSelectedSuite(0);
+            railModel.setSelectedPlan(0);
+
+            testPlanList.setItems(railModel.getCurrentPlans());
+            testSuiteList.setItems(railModel.getCurrentSuites());
+            configurationList.setItems(railModel.getCurrentConfigurations());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 
 }

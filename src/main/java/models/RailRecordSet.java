@@ -20,14 +20,18 @@ public class RailRecordSet {
     }
 
     public void addRow(RailRecord record) {
+        if(record==null)
+            return;
         if(this.rows==null)
             this.rows = new ArrayList<>();
         this.rows.add(record);
     }
 
     public void addColumnName(TestRailsEntity entity) {
+        if(entity==null)
+            return;
         if(this.columnNames==null)
-            this.columnNames=new ArrayList<>();
+            this.columnNames = new ArrayList<>();
         this.columnNames.add(entity);
     }
 

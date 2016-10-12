@@ -72,8 +72,8 @@
     <right>
         <VBox fx:id="rightBox" prefWidth="200">
             <children>
-                <Button fx:id="importPlanButton" text="Import plan" maxWidth="Infinity"/>
-                <Button fx:id="exportPlanButton" text="Export plan" maxWidth="Infinity"/>
+                <Button fx:id="importPlanButton" text="Import plan from csv" maxWidth="Infinity"/>
+                <Button fx:id="exportPlanButton" text="Export plan to csv" maxWidth="Infinity"/>
                 <Button fx:id="previewPlanButton" text="Preview plan" maxWidth="Infinity"/>
                 <Separator orientation="HORIZONTAL"/>
                 <Button fx:id="uploadPlanButton" text="Upload plan" maxWidth="Infinity"/>

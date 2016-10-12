@@ -74,11 +74,11 @@ public class RailModel {
                 entityTime.put(selectedProject, System.currentTimeMillis());
             }
         }
-        if(null==tempProject)
+        if(tempProject==null)
             tempProject = this.cachedProjects.get(selectedProject);
-        this.setCurrentPlans(FXCollections.observableArrayList(tempProject.getPlans()));
-        this.setCurrentSuites(FXCollections.observableArrayList(tempProject.getSuites()));
-        this.setCurrentConfigurations(FXCollections.observableArrayList(tempProject.getConfigurations()));
+        this.currentPlans = FXCollections.observableArrayList(tempProject.getPlans());
+        this.currentSuites = FXCollections.observableArrayList(tempProject.getSuites());
+        this.currentConfigurations = FXCollections.observableArrayList(tempProject.getConfigurations());
 
     }
 
@@ -205,10 +205,6 @@ public class RailModel {
     }
 
     public ObservableList<Configuration> getCurrentConfigurations() {
-//        if(currentConfigurations==null) {
-//            //need to update
-//        }
-
         return currentConfigurations;
     }
 
@@ -238,6 +234,12 @@ public class RailModel {
 
     public void setSelectedConfigurationItem(int selectedConfigurationItem) {
         this.selectedConfigurationItem = selectedConfigurationItem;
+    }
+
+    public void resetCache() {
+        for(Map.Entry<Integer, Long> entry : entityTime.entrySet())
+            entityTime.put(entry.getKey(), 0L);
+
     }
 
 

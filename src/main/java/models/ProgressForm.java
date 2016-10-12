@@ -27,7 +27,7 @@ public class ProgressForm {
         dialogStage.initModality(Modality.APPLICATION_MODAL);
 
         // PROGRESS BAR
-        label.setText("Undefined process");
+        label.setText("Undefined process is running");
 
         pb.setProgress(-1F);
         pin.setProgress(-1F);
@@ -35,7 +35,8 @@ public class ProgressForm {
         final HBox hb = new HBox();
         hb.setSpacing(5);
         hb.setAlignment(Pos.CENTER);
-        hb.getChildren().addAll(pb, pin);
+        //hb.getChildren().addAll(pb, pin);
+        hb.getChildren().addAll(label, pin);
 
         Scene scene = new Scene(hb);
         dialogStage.setScene(scene);

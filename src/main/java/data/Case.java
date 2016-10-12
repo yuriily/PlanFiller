@@ -2,8 +2,11 @@ package data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.io.Serializable;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Case extends TestRailsEntity {
+public class Case extends TestRailsEntity implements Serializable {
+	private static final long serialVersionUID = -5356758170595866117L;
 	private int createdBy;
 	private Long createdOn;
 	private String estimate;

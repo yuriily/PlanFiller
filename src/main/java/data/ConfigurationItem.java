@@ -1,6 +1,9 @@
 package data;
 
-public class ConfigurationItem extends TestRailsEntity {
+import java.io.Serializable;
+
+public class ConfigurationItem extends TestRailsEntity implements Serializable {
+	private static final long serialVersionUID = -5497480091850182708L;
 	private int groupId;
 	private int id;
 	private String name;

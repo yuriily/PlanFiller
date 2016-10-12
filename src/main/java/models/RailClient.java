@@ -43,7 +43,7 @@ public final class RailClient {
 
         }
         else {
-            System.out.println("Cannot connect to testrail - some parameter is empty");
+            System.out.println("Cannot connect to testrail - URL, username or password are empty");
             return false;
         }
         return true;
@@ -155,6 +155,31 @@ public final class RailClient {
 
     }
 
+    //todo maybe return the id of created instance?
+    public boolean createOneInstance(Map<String,Object> parameters, Class instanceClass, int parentId) {
+        Map<Class,String> prefixes = new HashMap<>();
+        //todo check if parent id is null - then nothing can be created except for projects; and we don't have access rights to create projects
+        //todo add suite and test case, maybe
+        prefixes.put(Plan.class, "add_plan/" + parentId);
+        String prefix = prefixes.get(instanceClass);
+        try {
+            System.out.println("Requesting TestRail with: '"+prefix+"'");
+            String results = client.sendPost(prefix, parameters).toString();
+            if(results.contains("{"))
+                System.out.println("Added successfully.");
+            else {
+                System.out.println(parseErrorMessage(results));
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
+
+        }
+
+        return true;
+    }
+
     //temporary method - just for presentation; should be changed to allow adding of different complex entities
     //test plans, plan entries
     public String tempPostPlan(int planId, Map<String,Object> postMap) throws Exception {
@@ -238,7 +263,6 @@ public final class RailClient {
         thread.start();
 
     }
-
 
 
     public String formatJsonToPrettyString(String jsonString) {
