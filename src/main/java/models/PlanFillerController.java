@@ -115,7 +115,7 @@ public class PlanFillerController {
         testProjectList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Project>() {
             @Override
             public void changed(ObservableValue<? extends Project> observable, Project oldValue, Project newValue) {
-                if(null==newValue)
+                if(newValue==null)
                     return;
                 updateProjectList(newValue);
 
@@ -287,7 +287,7 @@ public class PlanFillerController {
         });
 
         //always scroll textarea to the bottom when new string is added
-        consoleArea.textProperty().addListener((observable, oldValue, newValue) -> consoleArea.setScrollTop(Double.MAX_VALUE));
+        //consoleArea.textProperty().addListener((observable, oldValue, newValue) -> consoleArea.setScrollTop(Double.MAX_VALUE));
 
 
     }

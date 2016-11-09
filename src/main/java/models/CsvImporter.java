@@ -21,6 +21,9 @@ import java.util.Map;
  * Created by yuriily on 07-Sep-16.
  */
 public class CsvImporter {
+
+    //todo make system output buffered everywhere, if possible; so it won't overload fx thread
+
     private RailRecordSet recordSet;
     private RailModel railModel;
 
@@ -149,8 +152,10 @@ public class CsvImporter {
                                 ConfigurationItem configItem = allConfigItems.get(Integer.parseInt(entry.getKey().substring(0, 6).trim()));
                                 //configuration item can already be deleted, so skip it
                                 if(configItem != null) {
-                                    Platform.runLater(() -> System.out.println("Cannot find configuration with id: " + entry.getKey().substring(0, 6).trim() + ", skipped it."));
                                     railRecord.getColumnValues().put(configItem, entry.getValue().toString());
+                                }
+                                else {
+                                    Platform.runLater(() -> System.out.println("Cannot find configuration with id: " + entry.getKey().substring(0, 6).trim() + ", skipped it."));
                                 }
                             }
                         }
@@ -194,6 +199,8 @@ public class CsvImporter {
                         recordSet.addRow(railRecord);
                     } catch (Exception e) {
                         Platform.runLater(() -> System.out.println("An error during retrieving configuration with parameter id: " + rowRecordId));
+                        //todo really break here?
+                        break;
                     }
                 }
             }

@@ -40,6 +40,7 @@ public final class RailClient {
             client = new APIClient(OptionsValues.getInstance().getRailsURL());
             client.setUser(OptionsValues.getInstance().getUsername());
             client.setPassword(OptionsValues.getInstance().getPassword());
+            //todo if error 401 Invalid credentials is shown, reset password and open options popup
 
         }
         else {
@@ -100,7 +101,7 @@ public final class RailClient {
         T inst = instanceClass.newInstance();
         JavaType type = mapper.getTypeFactory().constructType(inst.getClass());
 
-        if(0==parameterId) {
+        if(parameterId==0) {
             //impossible - an id is needed for every element
             System.out.println("No ID was passed to get an instance of '"+type.toString()+"'");
         }
