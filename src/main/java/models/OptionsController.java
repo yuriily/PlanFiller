@@ -48,8 +48,10 @@ public class OptionsController {
 
         saveOptionsButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                if(saveOptions())
+                if(saveOptions()) {
                     closeOptionsButton.fire();
+                    RailClient.getInstance().connect();
+                }
                 else {
                     System.out.println("Something wrong has happened during saving the parameters. Please retry.");
                 }

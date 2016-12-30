@@ -81,9 +81,9 @@
                 <VBox maxHeight="Infinity">
                     <children>
                         <TableView fx:id="tableView" prefHeight="1000.0"/>
-                        <CheckBox fx:id="transposeCheckbox" selected="false" text="transpose"/>
                     </children>
                 </VBox>
+
                 <Separator orientation="HORIZONTAL"/>
                 <Button fx:id="optionsButton" text="Options..." maxWidth="Infinity"/>
                 <Button fx:id="exitButton" text="Exit" maxWidth="Infinity"/>

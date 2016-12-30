@@ -44,6 +44,15 @@ public class RailRecordSet {
         return null;
     }
 
+    //counts the number of entries - e.g. table cells with nonempty values
+    public int countEntries() {
+        int result = 0;
+        for(RailRecord record : this.rows)
+            result += record.getColumnValues().size();
+        return result;
+
+    }
+
     public List<TestRailsEntity> getColumnNames() {
         return columnNames;
     }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import data.*;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,17 +41,26 @@ public final class RailClient {
             client = new APIClient(OptionsValues.getInstance().getRailsURL());
             client.setUser(OptionsValues.getInstance().getUsername());
             client.setPassword(OptionsValues.getInstance().getPassword());
-            //todo if error 401 Invalid credentials is shown, reset password and open options popup
+            //if error 401 Invalid credentials is shown, reset current password
+            try {
+                JSONObject testConnection = (JSONObject)client.sendGet("get_case/1");
+            } catch (Exception e) {
+                if(e.toString().contains("HTTP 401")) {
+                    OptionsValues.getInstance().setPassword("");
+                    System.out.println(e.getMessage());
+                    return false;
+                }
+            }
 
         }
         else {
-            System.out.println("Cannot connect to testrail - URL, username or password are empty");
+            System.out.println("Cannot connect to TestRail - URL, username or password are empty");
             return false;
         }
         return true;
     }
 
-    //todo this should be deleted - now cannot cast int to int[] in a one-liner
+    //todo this should be deleted if you could cast int to int[] in a one-liner instead
     public <T> List<T> getAllInstances(int parameterId, Class<T> instanceClass) throws Exception {
         int[] param = new int[1];
         param[0] = parameterId;
@@ -118,7 +128,7 @@ public final class RailClient {
         String prefix = prefixes.get(inst.getClass());
 
         if(null!=prefix && !prefix.isEmpty()) {
-            System.out.println("Requesting TestRail with: '"+prefix+"'");
+            Platform.runLater(() -> System.out.println("Requesting TestRail with: '"+prefix+"'"));
             String tmp = client.sendGet(prefix).toString();
             T results = mapper.readValue(tmp, type);
             return results;
@@ -136,7 +146,7 @@ public final class RailClient {
         prefixes.put(ConfigurationItem.class, "delete_config/"+parameterId);
         String prefix = prefixes.get(instanceClass);
         try {
-            System.out.println("Requesting TestRail with: '"+prefix+"'");
+            Platform.runLater(() -> System.out.println("Requesting TestRail with: '"+prefix+"'"));
             //post request cannot accept second parameter as null, so we need to pass something there
             //empty map is OK
             Map<String,String> emptyMapForPost = new HashMap<>();
@@ -164,7 +174,7 @@ public final class RailClient {
         prefixes.put(Plan.class, "add_plan/" + parentId);
         String prefix = prefixes.get(instanceClass);
         try {
-            System.out.println("Requesting TestRail with: '"+prefix+"'");
+            Platform.runLater(() -> System.out.println("Requesting TestRail with: '"+prefix+"'"));
             String results = client.sendPost(prefix, parameters).toString();
             if(results.contains("{"))
                 System.out.println("Added successfully.");

@@ -15,7 +15,7 @@ import java.util.function.Predicate;
  *
  */
 public class RailModel {
-    private final static int TIMEOUT_TIME = 60*60*1000;
+    private final static int TIMEOUT_TIME = 60*60*1000; //1-hour refresh rate for cached items
 
     private Map<Integer, Project> cachedProjects = new HashMap<>();
     private Map<Integer, Suite> cachedSuites = new HashMap<>();

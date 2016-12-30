@@ -297,12 +297,22 @@ public class PlanFillerController {
         Stage stage = new Stage();
         stage.setTitle("Options");
         FXMLLoader optionsLoader = new FXMLLoader(getClass().getResource("/options.fxml"));
+
         try {
             Parent options = optionsLoader.load();
             Scene scene = new Scene(options);
             stage.setScene(scene);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(((Node)event.getSource()).getScene().getWindow());
+
+            OptionsController optionsController = (OptionsController) optionsLoader.getController();
+            String railsURL = OptionsValues.getInstance().getRailsURL();
+            String username = OptionsValues.getInstance().getUsername();
+            if(railsURL!=null && !railsURL.isEmpty())
+                optionsController.urlTextField.setText(railsURL);
+            if(username!=null && !username.isEmpty())
+                optionsController.loginTextField.setText(username);
+
             stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -323,11 +333,10 @@ public class PlanFillerController {
         if(alert.getResult() != ButtonType.YES)
             return;
         }
+            tableView.getItems().clear();
+            tableView.getColumns().clear();
+            tableView.setPlaceholder(new Label("Loading data..."));
 
-
-        tableView.getItems().clear();
-        tableView.getColumns().clear();
-        tableView.setPlaceholder(new Label("Loading data..."));
 
         railModel=RailModel.getInstance();
 
@@ -590,6 +599,13 @@ public class PlanFillerController {
         //FIRST CASE: we've got cases in rows and configurations in columns = true
         //SECOND CASE: configuration X configuration
         PlanEntry planEntry = new PlanEntry();
+
+        int recordsToAdd = railRecordSet.countEntries();
+        if(recordsToAdd==0) {
+            System.out.println("There is nothing to add - all table cells are empty. Please enter at least one value.");
+            return;
+        }
+        System.out.println("Number of entries to add: " + recordsToAdd);
 
         TextInputDialog entryNameDialog = new TextInputDialog("Common tests");
         entryNameDialog.setContentText("Please name a plan entry:");
