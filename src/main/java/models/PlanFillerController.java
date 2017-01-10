@@ -596,7 +596,7 @@ public class PlanFillerController {
 
     //adding an entry to existing test plan
     public void addTestPlanEntry(int planId, boolean isCasesInRows) {
-        //FIRST CASE: we've got cases in rows and configurations in columns = true
+        //FIRST CASE: we've got cases in rows and configurations in columns
         //SECOND CASE: configuration X configuration
         PlanEntry planEntry = new PlanEntry();
 

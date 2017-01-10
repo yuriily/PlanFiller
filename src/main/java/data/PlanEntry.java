@@ -102,15 +102,14 @@ public class PlanEntry {
 	}
 
 	public void addRunsFromRecordset(RailRecordSet railRecordSet, RailModel railModel, boolean isCasesInRows) {
-		//todo check if we can separate test runs into different entries - group by column; applies only to config*config table
 
 		//make a deep copy of all table rows
 		List<RailRecord> localRecords = new ArrayList<>(railRecordSet.getRows().size());
 		for(RailRecord railRecord:railRecordSet.getRows()) {
 			try {
-				//todo cannot use deepClone - it creates new instances of configurationItem objects so I cannot search for them whilke making
+				//todo cannot use deepClone - it creates new instances of configurationItem objects so I cannot search for them while making
 				//or change object comparison in search to .toString comparison, then first map key should be ConfigurationItem.toString
-				localRecords.add((RailRecord)railRecord.clone());
+				localRecords.add((RailRecord)railRecord.deepClone());
 			} catch (Exception e) { e.printStackTrace(); }
 		}
 
@@ -160,6 +159,8 @@ public class PlanEntry {
 
 				testRuns.add(run);
 			}
+
+
 			this.runs = testRuns;
 			this.caseIds = new ArrayList<>(uniqueRowEntityIds);
 			this.configIds = new ArrayList<>(includedConfigIds);

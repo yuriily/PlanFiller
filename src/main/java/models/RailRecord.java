@@ -37,7 +37,12 @@ public class RailRecord implements Serializable, Cloneable {
 
     public RailRecord deepClone() {
         RailRecord oldRecord = this;
-        RailRecord newRecord = null;
+        RailRecord newRecord = new RailRecord();
+        newRecord.rowValue = oldRecord.rowValue;
+        Map<TestRailsEntity, String> newColumnValues = new HashMap<>();
+        newColumnValues.putAll(oldRecord.columnValues);
+        newRecord.columnValues = newColumnValues;
+        /*
         try {
             FastByteArrayOutputStream fbos = new FastByteArrayOutputStream();
             ObjectOutputStream out = new ObjectOutputStream(fbos);
@@ -53,18 +58,9 @@ public class RailRecord implements Serializable, Cloneable {
         } catch (ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
         }
+        */
         return newRecord;
     }
 
-    //deep clone map columnValues only
-    public Object clone() throws CloneNotSupportedException {
-        super.clone();
-        Map<TestRailsEntity, String> newColumnValues = new HashMap<>();
-        newColumnValues.putAll(this.columnValues);
-        this.columnValues = newColumnValues;
-
-        return this;
-
-    }
 
 }
